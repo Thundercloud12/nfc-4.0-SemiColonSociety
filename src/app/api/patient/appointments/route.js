@@ -29,7 +29,8 @@ export async function GET() {
     })
     .populate('ashaWorker', 'name phone email')
     .sort({ appointmentDate: 1 }); // Sort by date ascending
-
+    
+    
     // Find missed appointments (past appointments that were scheduled but not completed)
     const missedAppointments = await Appointment.find({
       patient: session.user.id,

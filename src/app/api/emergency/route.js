@@ -4,6 +4,7 @@ import { connectDb } from "@/lib/dbConnect";
 import User from "@/models/User";
 import Emergency from "@/models/Emergency"; 
 
+
 const accountSid = process.env.TWILIO_ACC_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
@@ -70,6 +71,7 @@ export async function POST(req) {
       to: toPhoneNumber,
     });
 
+
     // Save emergency record to database
     const emergencyRecord = new Emergency({
       patient: userId,
@@ -97,4 +99,6 @@ export async function POST(req) {
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
+
 }
+
