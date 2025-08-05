@@ -3,14 +3,10 @@ import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import {
-  IconBrandGithub,
-  IconBrandGoogle,
-  IconBrandOnlyfans,
-} from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-export function SignUp() {
+
+export default function SignUp() {
     const router= useRouter();
     const[role,setRole]=useState("Patient");
 
