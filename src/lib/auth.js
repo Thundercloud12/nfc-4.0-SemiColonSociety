@@ -1,56 +1,49 @@
 import { NextAuthOptions } from "next-auth";
 import  CredentialsProvider  from "next-auth/providers/credentials";
-import { connectDb } from "./dbConect";
+import { connectDb } from "./dbConnect";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
 
 export const authOptions= {
     providers: [
         CredentialsProvider({
-            name: "Credentials",
+            name: "OTPLogin",
             credentials: {
-                username: {label: "username", type: "text"},
-                password: {label: "Password", type: "password"}
+                identifier: { label: "Email or Phone", type: "text" },
             },
-            async authorize(credentials){
-                if(!credentials?.username || !credentials?.password) {
-                    throw new Error("Missing username or password")
+            async authorize(credentials) {
+                const { identifier } = credentials;
+
+                if (!identifier) {
+                throw new Error("Missing identifier");
                 }
 
-                try {
-                    
-                   console.log("🔗 Connecting to MongoDB...");
-                    await connectDb();
-                    console.log("✅ DB connected");
-                   const user = await User.findOne({username: credentials.username})
+                await connectDb();
 
-                   if(!user) {
-                     throw new Error("User is not registered")
-                   }
+                const user = await User.findOne({
+                $or: [{ email: identifier }, { phone: identifier }]
+                });
 
-                   const isValid = await bcrypt.compare(credentials.password, user.password)
-
-                   if(!isValid) {
-                    throw new Error("Invalid Password")
-                   }
-
-                   return {
-                    id: user._id.toString(),
-                    username: user.username
-                   }
-
-                } catch (error) {
-                    console.log(error)
-                    throw error
+                if (!user) {
+                throw new Error("User not found");
                 }
+
+                // No password check — assume OTP was verified earlier
+                return {
+                id: user._id.toString(),
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                };
             }
         })
+
     ],
     callbacks: {
         async jwt({token, user}) {
             if(user) {
                 token.id = user.id;
-                token.username = user.username
+                token.name = user.name
             }
 
             return token
@@ -59,7 +52,7 @@ export const authOptions= {
             
             if(session.user) {
                 session.user.id = token.id
-                session.user.username = token.username
+                session.user.name = token.name
             }
             
             
