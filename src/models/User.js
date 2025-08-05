@@ -55,6 +55,38 @@ const userSchema = new Schema(
         uniqueCode: {
             type:String,
             required:true
+        },
+        location: {
+            coordinates: {
+                latitude: {
+                    type: Number,
+                    required: false
+                },
+                longitude: {
+                    type: Number,
+                    required: false
+                }
+            },
+            address: {
+                type: String,
+                required: false
+            },
+            city: {
+                type: String,
+                required: false
+            },
+            state: {
+                type: String,
+                required: false
+            },
+            country: {
+                type: String,
+                required: false
+            },
+            postalCode: {
+                type: String,
+                required: false
+            }
         }
     },
     { timestamps: true }
