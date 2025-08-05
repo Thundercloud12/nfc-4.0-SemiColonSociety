@@ -1,0 +1,21 @@
+import Appointment from "./Appointment";
+import DashNav from "./DashNav";
+import SymptomSec from "./Symptom";
+
+export default function IndDash(){
+    return(
+        <div className="grid min-h-screen  w-full  bg-pink-100">
+            <div className="max-w-screen ">
+<DashNav/>
+            </div>
+                <div className="flex  w-full flex-col lg:flex-row  bg-pink-100 ">
+  <div className=" bg-base-300 rounded-box grid  grow m-3 "><Appointment/></div>
+    <div className="divider lg:divider-horizontal  "></div>
+  <div className=" bg-base-300 rounded-box grid min-h-screen grow m-3 "><SymptomSec/></div>
+</div>
+            </div>
+
+
+
+    );
+}

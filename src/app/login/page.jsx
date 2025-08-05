@@ -2,6 +2,15 @@
 import { useState, useEffect } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import {
+  IconBrandGithub,
+  IconBrandGoogle,
+  IconBrandOnlyfans,
+} from "@tabler/icons-react";
+
 
 export default function OTPLogin() {
   const [identifier, setIdentifier] = useState('');
@@ -30,8 +39,10 @@ export default function OTPLogin() {
       // Redirect based on user role
       if (session.user.role === 'asha') {
         router.push('/asha-dashboard');
+      } else if (session.user.role ==='pregnant') {
+        router.push('/patient-dashboard'); 
       } else {
-        router.push('/'); // Default redirect for other roles
+        router.push('/');
       }
     }
   }, [session, router]);
@@ -98,24 +109,22 @@ export default function OTPLogin() {
     }
   };
 
+
+ 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-50 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full">
-        <div className="bg-white rounded-2xl shadow-xl p-8 border-t-4 border-pink-500">
+        <div className="bg-white rounded-2xl shadow-xl p-8 ">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="bg-pink-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl">🔑</span>
-            </div>
             <h2 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h2>
             <p className="text-gray-600">Sign in to your MaternalCare account</p>
           </div>
 
           {!otpSent ? (
             <form onSubmit={requestOtp} className="space-y-6">
-              <div className="bg-pink-50 p-6 rounded-xl">
+              
                 <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                  <span className="bg-pink-100 p-2 rounded-lg mr-3">📧</span>
                   Login Credentials
                 </h3>
                 
@@ -128,16 +137,16 @@ export default function OTPLogin() {
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
                     required
-                    className="w-full px-4 py-3 border-2 border-pink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200"
+                    className="w-full px-4 py-3 border-2 border-pink-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200"
                     placeholder="Enter your email or phone"
                   />
                 </div>
-              </div>
+              
               
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full px-6 py-4 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-xl hover:from-pink-600 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-bold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                className="w-full px-6 py-4 bg-pink-500 text-white rounded-xl hover:from-pink-600 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-bold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
                 {loading ? (
                   <span className="flex items-center justify-center">
@@ -148,21 +157,21 @@ export default function OTPLogin() {
                     Sending OTP...
                   </span>
                 ) : (
-                  "📨 Send OTP"
+                  "Send OTP"
                 )}
               </button>
             </form>
           ) : (
             <form onSubmit={verifyOtp} className="space-y-6">
-              <div className="bg-green-50 p-6 rounded-xl border-2 border-green-200">
+              <div className="bg-pink-50 p-6 rounded-xl border-2 border-pink-200">
                 <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                  <span className="bg-green-100 p-2 rounded-lg mr-3">🔐</span>
+                  
                   Verify OTP
                 </h3>
                 
                 <div className="mb-4">
-                  <div className="flex items-center p-3 bg-green-100 rounded-lg text-sm text-green-800">
-                    <span className="mr-2">✅</span>
+                  <div className="flex items-center p-3 bg-pink-100 rounded-lg text-sm text-pink-800">
+                    
                     OTP sent to: <span className="font-semibold ml-1">{identifier}</span>
                   </div>
                 </div>
@@ -177,7 +186,7 @@ export default function OTPLogin() {
                     onChange={(e) => setOtp(e.target.value)}
                     required
                     maxLength="6"
-                    className="w-full px-4 py-3 border-2 border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-center font-mono text-lg tracking-widest"
+                    className="w-full px-4 py-3 border-2 border-pink-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200 text-center font-mono text-lg tracking-widest"
                     placeholder="000000"
                   />
                 </div>
@@ -187,7 +196,7 @@ export default function OTPLogin() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full px-6 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-bold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  className="w-full px-6 py-4 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-xl hover:from-pink-600 hover:to-pink-700 focus:outline-none focus:ring-1 focus:ring-pink-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-bold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
                   {loading ? (
                     <span className="flex items-center justify-center">
@@ -198,7 +207,7 @@ export default function OTPLogin() {
                       Verifying...
                     </span>
                   ) : (
-                    "🚀 Verify & Login"
+                    " Verify & Login"
                   )}
                 </button>
                 
@@ -219,20 +228,12 @@ export default function OTPLogin() {
 
           {/* Success/Error Messages */}
           {message && (
-            <div className={`mt-6 p-4 rounded-xl border-l-4 ${
-              message.includes("Error") || message.includes("Failed")
-                ? "bg-red-50 text-red-800 border-red-400"
-                : "bg-green-50 text-green-800 border-green-400"
-            } shadow-sm`}>
-              <div className="flex items-start">
-                <span className="mr-3 text-lg">
-                  {message.includes("Error") || message.includes("Failed") ? "❌" : "✅"}
-                </span>
-                <div className="flex-1">
+              <div className="flex mt-5 items-center justify-center">
+                <div className="flex-1 justify-center text-center">
                   <div>{message}</div>
                 </div>
               </div>
-            </div>
+            
           )}
 
           {/* Footer */}

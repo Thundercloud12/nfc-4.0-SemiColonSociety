@@ -1,6 +1,7 @@
+"use client";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import SessionWrapper from "@/components/SessionWrapper";
+import { SessionProvider } from "next-auth/react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,12 +13,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
-  title: "MaternalCare - Offline Support",
-  description: "Maternal healthcare management with offline support",
-  manifest: "/manifest.json",
-};
-
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
@@ -26,14 +21,12 @@ export default function RootLayout({ children }) {
         <meta name="theme-color" content="#ec4899" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
-      <SessionWrapper>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
-        
+        <SessionProvider>{children}</SessionProvider>
         {/* Service Worker Registration */}
-        <script 
+        <script
           dangerouslySetInnerHTML={{
             __html: `
               if ('serviceWorker' in navigator) {
@@ -47,11 +40,10 @@ export default function RootLayout({ children }) {
                     });
                 });
               }
-            `
+            `,
           }}
         />
       </body>
-    </SessionWrapper>
     </html>
   );
 }
