@@ -38,7 +38,9 @@ Conversation:
 ${conversationContext}
 Patient: ${message}
 
-Extract the symptom information into this exact JSON format:
+Please provide:
+1. A brief empathetic response acknowledging the patient's decision to end the session
+2. Structured data in the following JSON format:
 
 {
   "symptoms": [

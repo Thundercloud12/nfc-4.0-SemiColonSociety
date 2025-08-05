@@ -219,101 +219,127 @@ export default function PatientDetails() {
   console.log("[PatientDetails] Patient symptom logs count:", patient.symptomLogs?.length || 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-50 p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div className="bg-white rounded-xl shadow-lg p-8 mb-8 border-t-4 border-pink-500">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">
+              <h1 className="text-4xl font-bold text-gray-800 mb-3 flex items-center">
+                <span className="bg-pink-100 p-3 rounded-full mr-4">
+                  👤
+                </span>
                 Patient Details
               </h1>
-              <p className="text-gray-600">View patient information and symptom logs</p>
+              <p className="text-gray-600 text-lg">View comprehensive patient information and symptom logs</p>
             </div>
             <button
               onClick={() => {
                 console.log("[PatientDetails] Back to Dashboard button clicked");
                 router.push("/asha-dashboard");
               }}
-              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+              className="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
             >
-              Back to Dashboard
+              ← Back to Dashboard
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Patient Information */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            <div className="bg-white rounded-xl shadow-lg p-8 border border-pink-100">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                <span className="bg-pink-100 p-2 rounded-lg mr-3">
+                  📋
+                </span>
                 Patient Information
               </h2>
               
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Name</label>
-                  <p className="text-lg font-semibold text-gray-800">{patient.name}</p>
+              <div className="space-y-6">
+                <div className="p-4 bg-pink-50 rounded-lg">
+                  <label className="text-sm font-semibold text-pink-700 uppercase tracking-wide">Name</label>
+                  <p className="text-xl font-bold text-gray-800 mt-1">{patient.name}</p>
                 </div>
                 
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Phone</label>
-                  <p className="text-gray-800">{patient.phone}</p>
+                <div className="p-4 bg-pink-50 rounded-lg">
+                  <label className="text-sm font-semibold text-pink-700 uppercase tracking-wide">Phone</label>
+                  <p className="text-lg font-semibold text-gray-800 mt-1 flex items-center">
+                    <span className="mr-2">📞</span>
+                    {patient.phone}
+                  </p>
                 </div>
                 
                 {patient.email && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Email</label>
-                    <p className="text-gray-800">{patient.email}</p>
+                  <div className="p-4 bg-pink-50 rounded-lg">
+                    <label className="text-sm font-semibold text-pink-700 uppercase tracking-wide">Email</label>
+                    <p className="text-lg font-semibold text-gray-800 mt-1 flex items-center">
+                      <span className="mr-2">📧</span>
+                      {patient.email}
+                    </p>
                   </div>
                 )}
                 
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Role</label>
-                  <span className="inline-block px-2 py-1 text-xs rounded-full bg-pink-100 text-pink-700 ml-2">
-                    {patient.role}
-                  </span>
+                <div className="p-4 bg-pink-50 rounded-lg">
+                  <label className="text-sm font-semibold text-pink-700 uppercase tracking-wide">Role</label>
+                  <div className="mt-2">
+                    <span className="inline-block px-4 py-2 text-sm font-bold rounded-full bg-pink-500 text-white">
+                      {patient.role}
+                    </span>
+                  </div>
                 </div>
                 
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Unique Code</label>
-                  <p className="text-gray-800 font-mono">{patient.uniqueCode}</p>
+                <div className="p-4 bg-pink-50 rounded-lg">
+                  <label className="text-sm font-semibold text-pink-700 uppercase tracking-wide">Unique Code</label>
+                  <p className="text-lg font-bold text-gray-800 mt-1 font-mono bg-white px-3 py-2 rounded border">
+                    {patient.uniqueCode}
+                  </p>
                 </div>
                 
                 {patient.pregnancyInfo && (
-                  <div className="border-t pt-4">
-                    <h3 className="font-medium text-gray-800 mb-2">Pregnancy Information</h3>
+                  <div className="border-t-2 border-pink-200 pt-6">
+                    <h3 className="font-bold text-gray-800 mb-4 flex items-center text-lg">
+                      <span className="bg-pink-100 p-2 rounded-lg mr-3">
+                        🤱
+                      </span>
+                      Pregnancy Information
+                    </h3>
                     
                     {patient.pregnancyInfo.month && (
-                      <div className="mb-2">
-                        <label className="text-sm font-medium text-gray-500">Month</label>
-                        <p className="text-gray-800">{patient.pregnancyInfo.month}</p>
+                      <div className="mb-4 p-3 bg-pink-50 rounded-lg">
+                        <label className="text-sm font-semibold text-pink-700 uppercase tracking-wide">Pregnancy Month</label>
+                        <p className="text-lg font-bold text-gray-800 mt-1">{patient.pregnancyInfo.month} months</p>
                       </div>
                     )}
                     
                     {patient.pregnancyInfo.expectedDeliveryDate && (
-                      <div className="mb-2">
-                        <label className="text-sm font-medium text-gray-500">Expected Delivery</label>
-                        <p className="text-gray-800">
+                      <div className="mb-4 p-3 bg-pink-50 rounded-lg">
+                        <label className="text-sm font-semibold text-pink-700 uppercase tracking-wide">Expected Delivery</label>
+                        <p className="text-lg font-bold text-gray-800 mt-1 flex items-center">
+                          <span className="mr-2">📅</span>
                           {new Date(patient.pregnancyInfo.expectedDeliveryDate).toLocaleDateString("en-IN")}
                         </p>
                       </div>
                     )}
                     
                     {patient.pregnancyInfo.medications && patient.pregnancyInfo.medications.length > 0 && (
-                      <div className="mb-2">
-                        <label className="text-sm font-medium text-gray-500">Medications</label>
-                        <ul className="text-gray-800 text-sm">
+                      <div className="mb-4 p-3 bg-pink-50 rounded-lg">
+                        <label className="text-sm font-semibold text-pink-700 uppercase tracking-wide">Medications</label>
+                        <ul className="text-gray-800 text-sm mt-2 space-y-1">
                           {patient.pregnancyInfo.medications.map((med, index) => (
-                            <li key={index}>• {med}</li>
+                            <li key={index} className="flex items-center">
+                              <span className="mr-2 text-pink-500">💊</span>
+                              {med}
+                            </li>
                           ))}
                         </ul>
                       </div>
                     )}
                     
                     {patient.pregnancyInfo.highRisk && (
-                      <div className="mb-2">
-                        <span className="px-2 py-1 text-xs rounded-full bg-red-100 text-red-700">
+                      <div className="mb-4">
+                        <span className="px-4 py-2 text-sm font-bold rounded-full bg-red-500 text-white flex items-center w-fit">
+                          <span className="mr-2">⚠️</span>
                           High Risk Pregnancy
                         </span>
                       </div>
@@ -326,72 +352,87 @@ export default function PatientDetails() {
 
           {/* Symptom Logs */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                Symptom Logs ({patient.symptomLogs?.length || 0})
+            <div className="bg-white rounded-xl shadow-lg p-8 border border-pink-100">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center justify-between">
+                <span className="flex items-center">
+                  <span className="bg-pink-100 p-2 rounded-lg mr-3">
+                    📊
+                  </span>
+                  Symptom Logs
+                </span>
+                <span className="bg-pink-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                  {patient.symptomLogs?.length || 0}
+                </span>
               </h2>
               
               {!patient.symptomLogs || patient.symptomLogs.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
+                <div className="text-center py-12 text-gray-500">
+                  <div className="bg-pink-50 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+                    <span className="text-4xl">📋</span>
                   </div>
-                  <p className="text-lg font-medium">No symptom logs recorded</p>
-                  <p className="text-sm mt-2">
-                    Patient hasn't logged any symptoms yet.
+                  <p className="text-xl font-medium text-gray-600">No symptom logs recorded</p>
+                  <p className="text-sm mt-3 text-gray-500">
+                    Patient hasn't logged any symptoms yet. Encourage them to use the symptom logger.
                   </p>
                 </div>
               ) : (
-                <div className="space-y-6 max-h-96 overflow-y-auto">
+                <div className="space-y-6 max-h-96 overflow-y-auto custom-scrollbar pr-2">
                   {patient.symptomLogs.map((log) => (
                     <div
                       key={log._id}
-                      className="border border-gray-200 rounded-lg p-4"
+                      className="border-2 border-pink-100 rounded-xl p-6 hover:shadow-lg transition-all duration-200 hover:border-pink-200 bg-gradient-to-r from-white to-pink-25"
                     >
-                      <div className="flex justify-between items-start mb-3">
+                      <div className="flex justify-between items-start mb-4">
                         <div className="flex items-center gap-3">
-                          <h3 className="font-semibold text-gray-800">
+                          <h3 className="font-bold text-gray-800 text-lg flex items-center">
+                            <span className="bg-pink-100 p-2 rounded-lg mr-3">
+                              📝
+                            </span>
                             Symptom Log
                           </h3>
                           {log.priority && (
-                            <span className={`px-3 py-1 text-xs font-medium rounded-full border ${getPriorityColor(log.priority)}`}>
+                            <span className={`px-4 py-2 text-xs font-bold rounded-full border-2 ${getPriorityColor(log.priority)} uppercase tracking-wide shadow-sm`}>
                               {log.priority} PRIORITY
                             </span>
                           )}
                         </div>
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
                           {formatDate(log.loggedAt)}
                         </span>
                       </div>
                       
                       {log.generalCondition && (
-                        <div className="mb-3">
-                          <label className="text-sm font-medium text-gray-600">General Condition:</label>
-                          <p className="text-gray-800 mt-1">{log.generalCondition}</p>
+                        <div className="mb-4 p-4 bg-pink-50 rounded-lg border-l-4 border-pink-400">
+                          <label className="text-sm font-bold text-pink-700 uppercase tracking-wide">General Condition:</label>
+                          <p className="text-gray-800 mt-2 text-lg">{log.generalCondition}</p>
                         </div>
                       )}
                       
                       {log.symptoms && log.symptoms.length > 0 && (
-                        <div className="mb-3">
-                          <label className="text-sm font-medium text-gray-600">Symptoms:</label>
-                          <div className="mt-2 space-y-2">
+                        <div className="mb-4">
+                          <label className="text-sm font-bold text-pink-700 uppercase tracking-wide mb-3 block">Symptoms:</label>
+                          <div className="space-y-3">
                             {log.symptoms.map((symptom, index) => (
-                              <div key={index} className="bg-gray-50 p-3 rounded border-l-4 border-blue-400">
-                                <div className="flex items-center justify-between mb-1">
-                                  <span className="font-medium text-gray-800">{symptom.name}</span>
-                                  <span className={`px-2 py-1 text-xs rounded-full ${getSeverityColor(symptom.severity)}`}>
+                              <div key={index} className="bg-gradient-to-r from-pink-50 to-rose-50 p-4 rounded-lg border-l-4 border-pink-400 shadow-sm">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="font-bold text-gray-800 text-lg flex items-center">
+                                    <span className="mr-2">🔴</span>
+                                    {symptom.name}
+                                  </span>
+                                  <span className={`px-3 py-1 text-xs font-bold rounded-full ${getSeverityColor(symptom.severity)}`}>
                                     {symptom.severity}
                                   </span>
                                 </div>
                                 {symptom.duration && (
-                                  <p className="text-sm text-gray-600 mb-1">
-                                    <span className="font-medium">Duration:</span> {symptom.duration}
+                                  <p className="text-sm text-gray-600 mb-2 flex items-center">
+                                    <span className="font-semibold mr-2">⏱️ Duration:</span> 
+                                    <span className="bg-white px-2 py-1 rounded">{symptom.duration}</span>
                                   </p>
                                 )}
                                 {symptom.description && (
-                                  <p className="text-sm text-gray-700">{symptom.description}</p>
+                                  <p className="text-sm text-gray-700 bg-white p-3 rounded-lg border border-pink-200 italic">
+                                    "{symptom.description}"
+                                  </p>
                                 )}
                               </div>
                             ))}
@@ -400,18 +441,21 @@ export default function PatientDetails() {
                       )}
                       
                       {log.additionalNotes && (
-                        <div className="mb-3">
-                          <label className="text-sm font-medium text-gray-600">Additional Notes:</label>
-                          <p className="text-gray-800 mt-1">{log.additionalNotes}</p>
+                        <div className="mb-4 p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
+                          <label className="text-sm font-bold text-yellow-700 uppercase tracking-wide">Additional Notes:</label>
+                          <p className="text-gray-800 mt-2 text-lg italic">"{log.additionalNotes}"</p>
                         </div>
                       )}
                       
                       {log.recommendedActions && log.recommendedActions.length > 0 && (
-                        <div>
-                          <label className="text-sm font-medium text-gray-600">Recommended Actions:</label>
-                          <ul className="text-gray-800 mt-1">
+                        <div className="p-4 bg-green-50 rounded-lg border-l-4 border-green-400">
+                          <label className="text-sm font-bold text-green-700 uppercase tracking-wide mb-3 block">Recommended Actions:</label>
+                          <ul className="text-gray-800 space-y-2">
                             {log.recommendedActions.map((action, index) => (
-                              <li key={index} className="text-sm">• {action}</li>
+                              <li key={index} className="text-sm flex items-start">
+                                <span className="mr-2 text-green-500 font-bold">✓</span>
+                                <span className="bg-white px-3 py-1 rounded-lg border border-green-200 flex-1">{action}</span>
+                              </li>
                             ))}
                           </ul>
                         </div>
@@ -424,6 +468,23 @@ export default function PatientDetails() {
           </div>
         </div>
       </div>
+      
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #fdf2f8;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #ec4899;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #db2777;
+        }
+      `}</style>
     </div>
   );
 }

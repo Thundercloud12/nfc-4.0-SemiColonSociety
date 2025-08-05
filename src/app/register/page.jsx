@@ -1,579 +1,637 @@
 'use client';
-import { useState } from 'react';
-import dynamic from 'next/dynamic';
 
-// Dynamically import LocationMap to avoid SSR issues
+import { useState } from "react";
+import dynamic from "next/dynamic";
+
 const LocationMap = dynamic(() => import('../../components/LocationMap'), { ssr: false });
 
 export default function RegisterForm() {
-    const [formData, setFormData] = useState({
-        name: '',
-        phone: '',
-        email: '',
-        password: '',
-        role: '',
-        languagePreference: 'hi',
-        // Pregnant specific
-        pregnancyMonth: '',
-        medications: '',
-        expectedDeliveryDate: '',
-        highRisk: false,
-        // Family specific
-        uniqueCode: '',
-        // Location data
-        location: null,
-    });
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    password: '',
+    role: '',
+    languagePreference: 'hi',
+    // Pregnant specific
+    pregnancyMonth: '',
+    medications: '',
+    expectedDeliveryDate: '',
+    highRisk: false,
+    // Family specific
+    uniqueCode: '',
+    // Location data
+    location: null,
+  });
 
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState('');
-    const [locationLoading, setLocationLoading] = useState(false);
-    const [locationError, setLocationError] = useState('');
-    const [showMap, setShowMap] = useState(false);
-    const [mapCenter, setMapCenter] = useState([20.5937, 78.9629]); // Default center of India
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [locationError, setLocationError] = useState('');
+  const [showMap, setShowMap] = useState(false);
+  const [mapCenter, setMapCenter] = useState([20.5937, 78.9629]); // India default
 
-    const handleInputChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        console.log('Input change:', { name, value, type }); // Debug log
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
-    };
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
 
-    const getCurrentLocation = () => {
-        setLocationLoading(true);
-        setLocationError('');
-        
-        if (!navigator.geolocation) {
-            setLocationError('Geolocation is not supported by this browser.');
-            setLocationLoading(false);
-            return;
-        }
+  const getCurrentLocation = () => {
+    setLocationLoading(true);
+    setLocationError('');
 
-        navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                const { latitude, longitude } = position.coords;
-                
-                try {
-                    // Reverse geocoding using OpenStreetMap Nominatim API
-                    const response = await fetch(
-                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`
-                    );
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        const address = data.address || {};
-                        
-                        const locationData = {
-                            coordinates: { latitude, longitude },
-                            address: data.display_name || '',
-                            city: address.city || address.town || address.village || '',
-                            state: address.state || '',
-                            country: address.country || '',
-                            postalCode: address.postcode || ''
-                        };
-                        
-                        setFormData(prev => ({
-                            ...prev,
-                            location: locationData
-                        }));
-                        
-                        // Set map center and show map
-                        setMapCenter([latitude, longitude]);
-                        setShowMap(true);
-                        
-                        console.log('Location captured:', locationData);
-                    } else {
-                        setLocationError('Failed to get address details');
-                    }
-                } catch (error) {
-                    console.error('Error getting address:', error);
-                    setLocationError('Failed to get address details');
-                    
-                    // Still save coordinates even if address lookup fails
-                    const locationData = {
-                        coordinates: { latitude, longitude },
-                        address: `${latitude}, ${longitude}`,
-                        city: '',
-                        state: '',
-                        country: '',
-                        postalCode: ''
-                    };
-                    
-                    setFormData(prev => ({
-                        ...prev,
-                        location: locationData
-                    }));
-                    
-                    // Set map center and show map
-                    setMapCenter([latitude, longitude]);
-                    setShowMap(true);
-                }
-                
-                setLocationLoading(false);
-            },
-            (error) => {
-                console.error('Geolocation error:', error);
-                let errorMessage = 'Failed to get location. ';
-                
-                switch (error.code) {
-                    case error.PERMISSION_DENIED:
-                        errorMessage += 'Location access denied by user.';
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        errorMessage += 'Location information unavailable.';
-                        break;
-                    case error.TIMEOUT:
-                        errorMessage += 'Location request timed out.';
-                        break;
-                    default:
-                        errorMessage += 'Unknown error occurred.';
-                        break;
-                }
-                
-                setLocationError(errorMessage);
-                setLocationLoading(false);
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 300000 // 5 minutes
-            }
-        );
-    };
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation is not supported by this browser.');
+      setLocationLoading(false);
+      return;
+    }
 
-    const handleMapClick = async (e) => {
-        const { lat, lng } = e.latlng;
-        
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+
         try {
-            // Reverse geocoding for the new location
-            const response = await fetch(
-                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`
-            );
-            
-            if (response.ok) {
-                const data = await response.json();
-                const address = data.address || {};
-                
-                const locationData = {
-                    coordinates: { latitude: lat, longitude: lng },
-                    address: data.display_name || '',
-                    city: address.city || address.town || address.village || '',
-                    state: address.state || '',
-                    country: address.country || '',
-                    postalCode: address.postcode || ''
-                };
-                
-                setFormData(prev => ({
-                    ...prev,
-                    location: locationData
-                }));
-                
-                setMapCenter([lat, lng]);
-                console.log('Updated location:', locationData);
-            }
-        } catch (error) {
-            console.error('Error getting address for clicked location:', error);
-            // Still update with coordinates
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            const address = data.address || {};
+
             const locationData = {
-                coordinates: { latitude: lat, longitude: lng },
-                address: `${lat}, ${lng}`,
-                city: '',
-                state: '',
-                country: '',
-                postalCode: ''
+              coordinates: { latitude, longitude },
+              address: data.display_name || '',
+              city: address.city || address.town || address.village || '',
+              state: address.state || '',
+              country: address.country || '',
+              postalCode: address.postcode || ''
             };
-            
+
             setFormData(prev => ({
-                ...prev,
-                location: locationData
+              ...prev,
+              location: locationData
             }));
-            
-            setMapCenter([lat, lng]);
-        }
-    };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setMessage('');
-
-        try {
-            // Prepare data based on role
-            const submitData = {
-                name: formData.name,
-                phone: formData.phone,
-                email: formData.email,
-                password: formData.password,
-                role: formData.role,
-                languagePreference: formData.languagePreference,
-                location: formData.location // Include location data
-            };
-
-            // Add role-specific data
-            if (formData.role === 'pregnant') {
-                submitData.pregnancyInfo = {
-                    month: parseInt(formData.pregnancyMonth),
-                    medications: formData.medications.split(',').map(med => med.trim()).filter(med => med),
-                    expectedDeliveryDate: formData.expectedDeliveryDate || undefined,
-                    highRisk: formData.highRisk,
-                };
-            } else if (formData.role === 'family') {
-                submitData.uniqueCode = formData.uniqueCode;
-            }
-            console.log(formData);
-            
-            const response = await fetch('/api/auth/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(submitData),
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                setMessage(`Success: ${result.message}`);
-                if (result.uniqueCode) {
-                    setMessage(prev => `${prev}\nYour unique code: ${result.uniqueCode}\n${result.note}`);
-                }
-                // Reset form
-                setFormData({
-                    name: '',
-                    phone: '',
-                    password: '',
-                    email: '',
-                    role: '',
-                    languagePreference: 'hi',
-                    pregnancyMonth: '',
-                    medications: '',
-                    expectedDeliveryDate: '',
-                    highRisk: false,
-                    uniqueCode: '',
-                    location: null, // Reset location
-                });
-            } else {
-                setMessage(`Error: ${result.error}`);
-            }
+            setMapCenter([latitude, longitude]);
+            setShowMap(true);
+          } else {
+            setLocationError('Failed to get address details');
+          }
         } catch (error) {
-            console.log(formData);
-            console.log(error);
-            
-            setMessage('Error: Failed to register. Please try again.');
-        } finally {
-            setLoading(false);
+          setLocationError('Failed to get address details');
+          // Save at least the coordinates even if address fails
+          setFormData(prev => ({
+            ...prev,
+            location: {
+              coordinates: { latitude, longitude },
+              address: `${latitude}, ${longitude}`,
+              city: '',
+              state: '',
+              country: '',
+              postalCode: ''
+            }
+          }));
+          setMapCenter([latitude, longitude]);
+          setShowMap(true);
         }
-    };
-
-    return (
-        <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Register</h2>
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Basic Fields */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Name *
-                    </label>
-                    <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Phone Number *
-                    </label>
-                    <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        required
-                        placeholder="Enter your phone number"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Email *
-                    </label>
-                    <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Password *
-                    </label>
-                    <input
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Role *
-                    </label>
-                    <select
-                        name="role"
-                        value={formData.role}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                        <option value="">Select Role</option>
-                        <option value="pregnant">Pregnant Woman</option>
-                        <option value="family">Family Member</option>
-                        <option value="asha">ASHA Worker</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Language Preference
-                    </label>
-                    <select
-                        name="languagePreference"
-                        value={formData.languagePreference}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                        <option value="hi">Hindi</option>
-                        <option value="mr">Marathi</option>
-                        <option value="gu">Gujarati</option>
-                        <option value="en">English</option>
-                    </select>
-                </div>
-
-                {/* Location Section */}
-                <div className="border-t pt-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Location (Optional but Recommended)
-                    </label>
-                    
-                    {!formData.location ? (
-                        <div>
-                            <button
-                                type="button"
-                                onClick={getCurrentLocation}
-                                disabled={locationLoading}
-                                className="w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            >
-                                {locationLoading ? "Getting Location..." : "📍 Get Current Location"}
-                            </button>
-                            
-                            {locationError && (
-                                <div className="mt-2 p-2 bg-red-100 border border-red-300 text-red-700 rounded text-sm">
-                                    {locationError}
-                                </div>
-                            )}
-                            
-                            <p className="text-xs text-gray-500 mt-2">
-                                Location helps ASHA workers provide better local healthcare services.
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            <div className="bg-green-50 border border-green-300 rounded-md p-3">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <p className="text-sm font-medium text-green-800">
-                                            ✅ Location Captured
-                                        </p>
-                                        <p className="text-sm text-green-700 mt-1">
-                                            {formData.location.address || `${formData.location.coordinates.latitude}, ${formData.location.coordinates.longitude}`}
-                                        </p>
-                                        {formData.location.city && (
-                                            <p className="text-xs text-green-600 mt-1">
-                                                {formData.location.city}, {formData.location.state}
-                                            </p>
-                                        )}
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setFormData(prev => ({ ...prev, location: null }));
-                                            setShowMap(false);
-                                        }}
-                                        className="text-green-600 hover:text-green-800 text-sm"
-                                    >
-                                        Clear
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            {showMap && (
-                                <div className="space-y-2">
-                                    <div className="flex justify-between items-center">
-                                        <p className="text-sm text-gray-600">
-                                            Click on the map to adjust your location
-                                        </p>
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowMap(false)}
-                                            className="text-sm text-gray-500 hover:text-gray-700"
-                                        >
-                                            Hide Map
-                                        </button>
-                                    </div>
-                                    
-                                    <div className="h-64 w-full border border-gray-300 rounded-md overflow-hidden">
-                                        <LocationMap
-                                            center={mapCenter}
-                                            location={formData.location}
-                                            onMapClick={handleMapClick}
-                                        />
-                                    </div>
-                                </div>
-                            )}
-                            
-                            {!showMap && (
-                                <button
-                                    type="button"
-                                    onClick={() => setShowMap(true)}
-                                    className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
-                                >
-                                    🗺️ Show Map to Adjust Location
-                                </button>
-                            )}
-                        </div>
-                    )}
-                </div>
-
-                {/* Pregnant Woman Specific Fields */}
-                {formData.role === 'pregnant' && (
-                    <div className="space-y-4 p-4 bg-pink-50 rounded-md">
-                        <h3 className="font-medium text-gray-800">Pregnancy Information</h3>
-                        
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Pregnancy Month (1-9) *
-                            </label>
-                            <input
-                                type="number"
-                                name="pregnancyMonth"
-                                value={formData.pregnancyMonth}
-                                onChange={handleInputChange}
-                                min="1"
-                                max="9"
-                                required
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Current Medications (comma separated)
-                            </label>
-                            <input
-                                type="text"
-                                name="medications"
-                                value={formData.medications}
-                                onChange={handleInputChange}
-                                placeholder="e.g. Iron tablets, Folic acid"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Expected Delivery Date
-                            </label>
-                            <input
-                                type="date"
-                                name="expectedDeliveryDate"
-                                value={formData.expectedDeliveryDate}
-                                onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="flex items-center">
-                                <input
-                                    type="checkbox"
-                                    name="highRisk"
-                                    checked={formData.highRisk}
-                                    onChange={handleInputChange}
-                                    className="mr-2"
-                                />
-                                <span className="text-sm text-gray-700">High Risk Pregnancy</span>
-                            </label>
-                        </div>
-                    </div>
-                )}
-
-                {/* Family Member Specific Fields */}
-                {formData.role === 'family' && (
-                    <div className="space-y-4 p-4 bg-green-50 rounded-md">
-                        <h3 className="font-medium text-gray-800">Family Link Information</h3>
-                        
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Unique Code from Pregnant Woman *
-                            </label>
-                            <input
-                                type="text"
-                                name="uniqueCode"
-                                value={formData.uniqueCode}
-                                onChange={handleInputChange}
-                                required
-                                placeholder="Enter 8-character code"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                            <p className="text-xs text-gray-500 mt-1">
-                                Ask the pregnant woman for her unique code to link your accounts
-                            </p>
-                        </div>
-                    </div>
-                )}
-
-                {/* ASHA Worker gets no additional fields */}
-                {formData.role === 'asha' && (
-                    <div className="p-4 bg-blue-50 rounded-md">
-                        <p className="text-sm text-gray-700">
-                            As an ASHA worker, you'll receive a unique identification code after registration.
-                        </p>
-                    </div>
-                )}
-
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {loading ? 'Registering...' : 'Register'}
-                </button>
-            </form>
-
-            {message && (
-                <div className={`mt-4 p-3 rounded-md text-sm whitespace-pre-line ${
-                    message.startsWith('Success') 
-                        ? 'bg-green-100 text-green-700 border border-green-300' 
-                        : 'bg-red-100 text-red-700 border border-red-300'
-                }`}>
-                    {message}
-                </div>
-            )}
-        </div>
+        setLocationLoading(false);
+      },
+      (error) => {
+        let errorMessage = 'Failed to get location. ';
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage += 'Location access denied by user.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage += 'Location information unavailable.';
+            break;
+          case error.TIMEOUT:
+            errorMessage += 'Location request timed out.';
+            break;
+          default:
+            errorMessage += 'Unknown error occurred.';
+            break;
+        }
+        setLocationError(errorMessage);
+        setLocationLoading(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000 // 5 min
+      }
     );
+  };
+
+  const handleMapClick = async (e) => {
+    const { lat, lng } = e.latlng;
+
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const address = data.address || {};
+        const locationData = {
+          coordinates: { latitude: lat, longitude: lng },
+          address: data.display_name || '',
+          city: address.city || address.town || address.village || '',
+          state: address.state || '',
+          country: address.country || '',
+          postalCode: address.postcode || ''
+        };
+        setFormData(prev => ({
+          ...prev,
+          location: locationData
+        }));
+        setMapCenter([lat, lng]);
+      }
+    } catch (error) {
+      setFormData(prev => ({
+        ...prev,
+        location: {
+          coordinates: { latitude: lat, longitude: lng },
+          address: `${lat}, ${lng}`,
+          city: '',
+          state: '',
+          country: '',
+          postalCode: ''
+        }
+      }));
+      setMapCenter([lat, lng]);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage('');
+
+    try {
+      // Only send what the API expects!
+      const submitData = {
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+        languagePreference: formData.languagePreference,
+        location: formData.location
+      };
+
+      if (formData.role === 'pregnant') {
+        submitData.pregnancyInfo = {
+          month: parseInt(formData.pregnancyMonth, 10),
+          medications: formData.medications
+            ? formData.medications.split(',').map(med => med.trim()).filter(med => med)
+            : [],
+          expectedDeliveryDate: formData.expectedDeliveryDate || undefined,
+          highRisk: formData.highRisk,
+        };
+      } else if (formData.role === 'family') {
+        submitData.uniqueCode = formData.uniqueCode;
+      }
+
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(submitData),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setMessage(`Success: ${result.message}`);
+        if (result.uniqueCode) {
+          setMessage(prev => `${prev}\nYour unique code: ${result.uniqueCode}\n${result.note}`);
+        }
+        // Reset form
+        setFormData({
+          name: '',
+          phone: '',
+          email: '',
+          password: '',
+          role: '',
+          languagePreference: 'hi',
+          pregnancyMonth: '',
+          medications: '',
+          expectedDeliveryDate: '',
+          highRisk: false,
+          uniqueCode: '',
+          location: null
+        });
+      } else {
+        setMessage(`Error: ${result.error || result.message || "Unknown error"}`);
+      }
+    } catch (error) {
+      setMessage('Error: Failed to register. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-50 py-12 px-4">
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-white rounded-2xl shadow-xl p-8 border-t-4 border-pink-500">
+          <div className="text-center mb-8">
+            <div className="bg-pink-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-3xl">👤</span>
+            </div>
+            <h2 className="text-4xl font-bold text-gray-800 mb-2">Create Account</h2>
+            <p className="text-gray-600 text-lg">Join MaternalCare for better health management</p>
+          </div>
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Basic Information Section */}
+            <div className="bg-pink-50 p-6 rounded-xl">
+              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <span className="bg-pink-100 p-2 rounded-lg mr-3">📋</span>
+                Basic Information
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="Enter your full name"
+                    className="w-full px-4 py-3 border-2 border-pink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Phone Number *
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="Enter phone number"
+                    className="w-full px-4 py-3 border-2 border-pink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="Enter email address"
+                    className="w-full px-4 py-3 border-2 border-pink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Password *
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="Enter password"
+                    className="w-full px-4 py-3 border-2 border-pink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Role Selection */}
+            <div className="bg-pink-50 p-6 rounded-xl">
+              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <span className="bg-pink-100 p-2 rounded-lg mr-3">👥</span>
+                Select Your Role
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {['pregnant', 'family', 'asha'].map((role) => (
+                  <label key={role} className="cursor-pointer">
+                    <input
+                      type="radio"
+                      name="role"
+                      value={role}
+                      checked={formData.role === role}
+                      onChange={handleInputChange}
+                      className="sr-only"
+                    />
+                    <div className={`p-4 rounded-lg border-2 transition-all duration-200 text-center ${
+                      formData.role === role 
+                        ? 'border-pink-500 bg-pink-100 shadow-md' 
+                        : 'border-pink-200 bg-white hover:border-pink-300'
+                    }`}>
+                      <div className="text-2xl mb-2">
+                        {role === 'pregnant' ? '🤱' : role === 'family' ? '👨‍👩‍👧‍👦' : '👩‍⚕️'}
+                      </div>
+                      <div className="font-semibold text-gray-800 capitalize">{role}</div>
+                      <div className="text-xs text-gray-600 mt-1">
+                        {role === 'pregnant' ? 'Expecting mother' : 
+                         role === 'family' ? 'Family member' : 
+                         'Healthcare worker'}
+                      </div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Language Preference */}
+            <div className="bg-pink-50 p-6 rounded-xl">
+              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <span className="bg-pink-100 p-2 rounded-lg mr-3">🌐</span>
+                Language Preference
+              </h3>
+              
+              <select
+                name="languagePreference"
+                value={formData.languagePreference}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 border-2 border-pink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200"
+              >
+                <option value="hi">🇮🇳 Hindi</option>
+                <option value="mr">🇮🇳 Marathi</option>
+                <option value="gu">🇮🇳 Gujarati</option>
+                <option value="en">🇺🇸 English</option>
+              </select>
+            </div>
+
+            {/* Role-specific sections */}
+            {formData.role === 'pregnant' && (
+              <div className="bg-rose-50 p-6 rounded-xl border-2 border-rose-200">
+                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                  <span className="bg-rose-100 p-2 rounded-lg mr-3">🤱</span>
+                  Pregnancy Information
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Pregnancy Month *
+                    </label>
+                    <input
+                      type="number"
+                      name="pregnancyMonth"
+                      value={formData.pregnancyMonth}
+                      onChange={handleInputChange}
+                      min="1"
+                      max="9"
+                      required
+                      placeholder="Month (1-9)"
+                      className="w-full px-4 py-3 border-2 border-rose-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all duration-200"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Expected Delivery Date
+                    </label>
+                    <input
+                      type="date"
+                      name="expectedDeliveryDate"
+                      value={formData.expectedDeliveryDate}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border-2 border-rose-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all duration-200"
+                    />
+                  </div>
+                </div>
+                
+                <div className="mt-4">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Current Medications (comma-separated)
+                  </label>
+                  <textarea
+                    name="medications"
+                    value={formData.medications}
+                    onChange={handleInputChange}
+                    placeholder="e.g., Folic acid, Iron supplements"
+                    className="w-full px-4 py-3 border-2 border-rose-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all duration-200 resize-none"
+                    rows="3"
+                  />
+                </div>
+                
+                <div className="mt-4">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="highRisk"
+                      checked={formData.highRisk}
+                      onChange={handleInputChange}
+                      className="sr-only"
+                    />
+                    <div className={`w-6 h-6 rounded border-2 mr-3 flex items-center justify-center transition-all duration-200 ${
+                      formData.highRisk 
+                        ? 'bg-red-500 border-red-500' 
+                        : 'border-rose-300 hover:border-rose-400'
+                    }`}>
+                      {formData.highRisk && <span className="text-white text-sm">✓</span>}
+                    </div>
+                    <span className="text-sm font-semibold text-gray-700">
+                      This is a high-risk pregnancy
+                    </span>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {formData.role === 'family' && (
+              <div className="bg-blue-50 p-6 rounded-xl border-2 border-blue-200">
+                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                  <span className="bg-blue-100 p-2 rounded-lg mr-3">🔗</span>
+                  Family Connection
+                </h3>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Unique Code from Pregnant Woman *
+                  </label>
+                  <input
+                    type="text"
+                    name="uniqueCode"
+                    value={formData.uniqueCode}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="Enter the unique code"
+                    className="w-full px-4 py-3 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 font-mono"
+                  />
+                  <p className="text-xs text-gray-600 mt-2">
+                    Ask the pregnant woman for her unique code to link your accounts
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Location Section */}
+            <div className="bg-green-50 p-6 rounded-xl border-2 border-green-200">
+              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <span className="bg-green-100 p-2 rounded-lg mr-3">📍</span>
+                Location (Optional but Recommended)
+              </h3>
+              
+              {!formData.location ? (
+                <div>
+                  <button
+                    type="button"
+                    onClick={getCurrentLocation}
+                    disabled={locationLoading}
+                    className="w-full px-6 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  >
+                    {locationLoading ? (
+                      <span className="flex items-center justify-center">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Getting Location...
+                      </span>
+                    ) : (
+                      "📍 Get Current Location"
+                    )}
+                  </button>
+                  
+                  {locationError && (
+                    <div className="mt-4 p-4 bg-red-50 border-2 border-red-200 text-red-700 rounded-lg text-sm">
+                      <div className="flex items-center">
+                        <span className="mr-2">❌</span>
+                        {locationError}
+                      </div>
+                    </div>
+                  )}
+                  
+                  <p className="text-xs text-gray-600 mt-4 text-center">
+                    📱 Location helps ASHA workers provide better local healthcare services
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="bg-green-100 border-2 border-green-300 rounded-lg p-4">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <p className="text-sm font-bold text-green-800 flex items-center mb-2">
+                          <span className="mr-2">✅</span>
+                          Location Captured Successfully
+                        </p>
+                        <p className="text-sm text-green-700 mb-2">
+                          📍 {formData.location.address || `${formData.location.coordinates.latitude}, ${formData.location.coordinates.longitude}`}
+                        </p>
+                        {formData.location.city && (
+                          <p className="text-xs text-green-600">
+                            🏙️ {formData.location.city}, {formData.location.state}
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormData(prev => ({ ...prev, location: null }));
+                          setShowMap(false);
+                        }}
+                        className="text-green-600 hover:text-green-800 text-sm font-semibold px-3 py-1 rounded hover:bg-green-200 transition-all duration-200"
+                      >
+                        🗑️ Clear
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {showMap && (
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <p className="text-sm text-gray-700 font-semibold">
+                          🗺️ Click on the map to adjust your location
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setShowMap(false)}
+                          className="text-sm text-gray-500 hover:text-gray-700 font-semibold px-3 py-1 rounded hover:bg-gray-200 transition-all duration-200"
+                        >
+                          Hide Map
+                        </button>
+                      </div>
+                      
+                      <div className="h-64 w-full border-2 border-green-300 rounded-lg overflow-hidden shadow-md">
+                        <LocationMap
+                          center={mapCenter}
+                          location={formData.location}
+                          onMapClick={handleMapClick}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  
+                  {!showMap && (
+                    <button
+                      type="button"
+                      onClick={() => setShowMap(true)}
+                      className="w-full px-4 py-3 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200 font-semibold"
+                    >
+                      🗺️ Show Map to Adjust Location
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Submit Button */}
+            <div className="pt-4">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full px-8 py-4 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-xl hover:from-pink-600 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-bold text-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Creating Account...
+                  </span>
+                ) : (
+                  "🚀 Create Account"
+                )}
+              </button>
+            </div>
+          </form>
+
+          {/* Success/Error Messages */}
+          {message && (
+            <div className={`mt-6 p-4 rounded-xl border-l-4 ${
+              message.includes("Success") || message.includes("successfully")
+                ? "bg-green-50 text-green-800 border-green-400"
+                : "bg-red-50 text-red-800 border-red-400"
+            } shadow-sm`}>
+              <div className="flex items-start">
+                <span className="mr-3 text-lg">
+                  {message.includes("Success") || message.includes("successfully") ? "✅" : "❌"}
+                </span>
+                <div className="flex-1">
+                  <div className="whitespace-pre-line">{message}</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }

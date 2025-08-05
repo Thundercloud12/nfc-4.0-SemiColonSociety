@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { connectDb } from "@/lib/dbConnect";
 import User from "@/models/User";
+import SymptomLog from "@/models/SymptomLog";
 
 export async function GET(request, { params }) {
   try {

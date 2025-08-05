@@ -99,62 +99,153 @@ export default function OTPLogin() {
   };
 
   return (
-    <div className="max-w-sm mx-auto mt-12 p-6 border rounded-md shadow-md">
-      {!otpSent ? (
-        <form onSubmit={requestOtp} className="space-y-4">
-          <label>
-            Email or Phone:
-            <input
-              type="text"
-              value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
-              required
-              className="w-full p-2 border rounded mt-1"
-              placeholder="Enter your email or phone"
-            />
-          </label>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded disabled:opacity-60"
-          >
-            {loading ? 'Sending OTP...' : 'Send OTP'}
-          </button>
-        </form>
-      ) : (
-        <form onSubmit={verifyOtp} className="space-y-4">
-          <label>
-            Enter OTP:
-            <input
-              type="text"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              required
-              className="w-full p-2 border rounded mt-1"
-              placeholder="Enter the OTP"
-            />
-          </label>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-green-600 text-white py-2 rounded disabled:opacity-60"
-          >
-            {loading ? 'Verifying...' : 'Verify OTP & Login'}
-          </button>
-        </form>
-      )}
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-50 flex items-center justify-center py-12 px-4">
+      <div className="max-w-md w-full">
+        <div className="bg-white rounded-2xl shadow-xl p-8 border-t-4 border-pink-500">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="bg-pink-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-3xl">🔑</span>
+            </div>
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h2>
+            <p className="text-gray-600">Sign in to your MaternalCare account</p>
+          </div>
 
-      {message && (
-        <div
-          className={`mt-4 p-3 rounded text-sm ${
-            message.startsWith('Error')
-              ? 'bg-red-100 text-red-700'
-              : 'bg-green-100 text-green-700'
-          }`}
-        >
-          {message}
+          {!otpSent ? (
+            <form onSubmit={requestOtp} className="space-y-6">
+              <div className="bg-pink-50 p-6 rounded-xl">
+                <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                  <span className="bg-pink-100 p-2 rounded-lg mr-3">📧</span>
+                  Login Credentials
+                </h3>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Email or Phone Number
+                  </label>
+                  <input
+                    type="text"
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    required
+                    className="w-full px-4 py-3 border-2 border-pink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200"
+                    placeholder="Enter your email or phone"
+                  />
+                </div>
+              </div>
+              
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full px-6 py-4 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-xl hover:from-pink-600 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-bold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Sending OTP...
+                  </span>
+                ) : (
+                  "📨 Send OTP"
+                )}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={verifyOtp} className="space-y-6">
+              <div className="bg-green-50 p-6 rounded-xl border-2 border-green-200">
+                <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                  <span className="bg-green-100 p-2 rounded-lg mr-3">🔐</span>
+                  Verify OTP
+                </h3>
+                
+                <div className="mb-4">
+                  <div className="flex items-center p-3 bg-green-100 rounded-lg text-sm text-green-800">
+                    <span className="mr-2">✅</span>
+                    OTP sent to: <span className="font-semibold ml-1">{identifier}</span>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Enter 6-Digit OTP
+                  </label>
+                  <input
+                    type="text"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    required
+                    maxLength="6"
+                    className="w-full px-4 py-3 border-2 border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-center font-mono text-lg tracking-widest"
+                    placeholder="000000"
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full px-6 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-bold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                >
+                  {loading ? (
+                    <span className="flex items-center justify-center">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Verifying...
+                    </span>
+                  ) : (
+                    "🚀 Verify & Login"
+                  )}
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOtpSent(false);
+                    setOtp('');
+                    setMessage('');
+                  }}
+                  className="w-full px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all duration-200 font-semibold"
+                >
+                  ← Back to Login
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Success/Error Messages */}
+          {message && (
+            <div className={`mt-6 p-4 rounded-xl border-l-4 ${
+              message.includes("Error") || message.includes("Failed")
+                ? "bg-red-50 text-red-800 border-red-400"
+                : "bg-green-50 text-green-800 border-green-400"
+            } shadow-sm`}>
+              <div className="flex items-start">
+                <span className="mr-3 text-lg">
+                  {message.includes("Error") || message.includes("Failed") ? "❌" : "✅"}
+                </span>
+                <div className="flex-1">
+                  <div>{message}</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Footer */}
+          <div className="mt-8 text-center">
+            <p className="text-sm text-gray-600">
+              Don't have an account?{' '}
+              <a href="/register" className="text-pink-600 hover:text-pink-700 font-semibold transition-colors">
+                Sign up here
+              </a>
+            </p>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

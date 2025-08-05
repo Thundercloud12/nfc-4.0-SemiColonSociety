@@ -1,0 +1,16 @@
+{
+  "name": "MaternalCare - Offline Support",
+  "short_name": "MaternalCare",
+  "description": "Maternal healthcare management with offline support",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fdf2f8",
+  "theme_color": "#ec4899",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}
