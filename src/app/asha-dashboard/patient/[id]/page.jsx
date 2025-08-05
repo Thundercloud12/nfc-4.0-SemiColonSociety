@@ -292,9 +292,7 @@ export default function PatientDetails() {
             <div className="bg-white rounded-xl shadow-lg p-8 border border-pink-100">
               <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center justify-between">
                 <span className="flex items-center">
-                  <span className="bg-pink-100 p-2 rounded-lg mr-3">
-                    📊
-                  </span>
+                 
                   Symptom Logs
                 </span>
                 <span className="bg-pink-500 text-white px-3 py-1 rounded-full text-sm font-medium">
@@ -304,9 +302,7 @@ export default function PatientDetails() {
               
               {!patient.symptomLogs || patient.symptomLogs.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
-                  <div className="bg-pink-50 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
-                    <span className="text-4xl">📋</span>
-                  </div>
+                  
                   <p className="text-xl font-medium text-gray-600">No symptom logs recorded</p>
                   <p className="text-sm mt-3 text-gray-500">
                     Patient hasn't logged any symptoms yet. Encourage them to use the symptom logger.
@@ -322,9 +318,7 @@ export default function PatientDetails() {
                       <div className="flex justify-between items-start mb-4">
                         <div className="flex items-center gap-3">
                           <h3 className="font-bold text-gray-800 text-lg flex items-center">
-                            <span className="bg-pink-100 p-2 rounded-lg mr-3">
-                              📝
-                            </span>
+                            
                             Symptom Log
                           </h3>
                           {log.priority && (
@@ -353,7 +347,7 @@ export default function PatientDetails() {
                               <div key={index} className="bg-gradient-to-r from-pink-50 to-rose-50 p-4 rounded-lg border-l-4 border-pink-400 shadow-sm">
                                 <div className="flex items-center justify-between mb-2">
                                   <span className="font-bold text-gray-800 text-lg flex items-center">
-                                    <span className="mr-2">🔴</span>
+                                    
                                     {symptom.name}
                                   </span>
                                   <span className={`px-3 py-1 text-xs font-bold rounded-full ${getSeverityColor(symptom.severity)}`}>
@@ -362,7 +356,7 @@ export default function PatientDetails() {
                                 </div>
                                 {symptom.duration && (
                                   <p className="text-sm text-gray-600 mb-2 flex items-center">
-                                    <span className="font-semibold mr-2">⏱️ Duration:</span> 
+                                    <span className="font-semibold mr-2">Duration:</span> 
                                     <span className="bg-white px-2 py-1 rounded">{symptom.duration}</span>
                                   </p>
                                 )}
@@ -378,8 +372,8 @@ export default function PatientDetails() {
                       )}
                       
                       {log.additionalNotes && (
-                        <div className="mb-4 p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
-                          <label className="text-sm font-bold text-yellow-700 uppercase tracking-wide">Additional Notes:</label>
+                        <div className="mb-4 p-4 bg-yellow-50 rounded-lg border-l-4 border-pink-400">
+                          <label className="text-sm font-bold text-pink-700 uppercase tracking-wide">Additional Notes:</label>
                           <p className="text-gray-800 mt-2 text-lg italic">"{log.additionalNotes}"</p>
                         </div>
                       )}
