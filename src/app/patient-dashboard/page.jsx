@@ -13,18 +13,17 @@ export default function PatientDashboard() {
 
   useEffect(() => {
     if (status === "loading") return;
-    
+
     if (!session) {
       router.push("/login");
       return;
     }
-    
-    // Check if user is pregnant woman
+
     if (session.user.role !== "pregnant") {
       router.push("/");
       return;
     }
-    
+
     fetchAppointments();
   }, [session, status, router]);
 
@@ -34,6 +33,7 @@ export default function PatientDashboard() {
       const response = await fetch("/api/patient/appointments");
       if (response.ok) {
         const data = await response.json();
+
         setUpcomingAppointments(data.upcomingAppointments || []);
         setMissedAppointments(data.missedAppointments || []);
       }
@@ -74,15 +74,65 @@ export default function PatientDashboard() {
     const today = new Date();
     const timeDiff = appointmentDate.getTime() - today.getTime();
     const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-    
+
     if (daysDiff === 0) return "Today";
     if (daysDiff === 1) return "Tomorrow";
     if (daysDiff > 1) return `In ${daysDiff} days`;
     return `${Math.abs(daysDiff)} days ago`;
   };
 
+ const handleEmergency = () => {
+  if (!session) {
+    alert("User session not found");
+    return;
+  }
+
+  if (!navigator.geolocation) {
+    alert("Geolocation is not supported by your browser");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+
+      try {
+        const response = await fetch("/api/emergency", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: session.user.id, // user identifier
+            userLocation: { lat, lng },
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          alert("Emergency alert sent successfully to your ASHA worker!");
+        } else {
+          alert(data.error || "Failed to send emergency alert.");
+        }
+      } catch (error) {
+        console.error(error);
+        alert("Error sending emergency alert. Please try again.");
+      }
+    },
+    (error) => {
+      alert("Unable to retrieve your location: " + error.message);
+    },
+    { enableHighAccuracy: true }
+  );
+};
+
+
   if (status === "loading" || loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading...
+      </div>
+    );
   }
 
   if (!session) {
@@ -103,10 +153,12 @@ export default function PatientDashboard() {
                 <h1 className="text-3xl font-bold text-gray-800 mb-2">
                   Patient Dashboard
                 </h1>
-                <p className="text-gray-600 text-lg">Welcome back, {session.user.name}! 💖</p>
+                <p className="text-gray-600 text-lg">
+                  Welcome back, {session.user.name}! 💖
+                </p>
               </div>
             </div>
-            
+
             <div className="flex gap-3">
               <button
                 onClick={() => router.push("/patient-dashboard/symptom-logger")}
@@ -124,6 +176,16 @@ export default function PatientDashboard() {
           </div>
         </div>
 
+        {/* Emergency Button */}
+        <div className="mb-8 flex justify-center">
+          <button
+            onClick={handleEmergency}
+            className="px-8 py-4 bg-red-600 text-white rounded-xl hover:bg-red-700 font-bold text-lg shadow-lg transition duration-200"
+          >
+            🚨 Emergency Alert
+          </button>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Upcoming Appointments */}
           <div className="bg-white rounded-2xl shadow-xl p-8">
@@ -136,13 +198,15 @@ export default function PatientDashboard() {
                 {upcomingAppointments.length}
               </span>
             </div>
-            
+
             {upcomingAppointments.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
                 <div className="w-20 h-20 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center">
                   <span className="text-3xl">📅</span>
                 </div>
-                <p className="text-xl font-bold text-gray-700 mb-2">No upcoming appointments</p>
+                <p className="text-xl font-bold text-gray-700 mb-2">
+                  No upcoming appointments
+                </p>
                 <p className="text-sm">
                   Your ASHA worker will schedule appointments for you.
                 </p>
@@ -177,7 +241,7 @@ export default function PatientDashboard() {
                         </p>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-2 text-sm text-gray-700">
                       <p className="flex items-center">
                         <span className="font-semibold mr-2">🗓️ Date:</span>
@@ -215,13 +279,15 @@ export default function PatientDashboard() {
                 {missedAppointments.length}
               </span>
             </div>
-            
+
             {missedAppointments.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
                 <div className="w-20 h-20 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center">
                   <span className="text-3xl">✅</span>
                 </div>
-                <p className="text-xl font-bold text-gray-700 mb-2">No missed appointments</p>
+                <p className="text-xl font-bold text-gray-700 mb-2">
+                  No missed appointments
+                </p>
                 <p className="text-sm">
                   Great job keeping up with your healthcare schedule! 🎉
                 </p>
@@ -252,7 +318,7 @@ export default function PatientDashboard() {
                         </p>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-2 text-sm text-gray-700">
                       <p className="flex items-center">
                         <span className="font-semibold mr-2">🗓️ Date:</span>
@@ -273,13 +339,16 @@ export default function PatientDashboard() {
                         </p>
                       )}
                     </div>
-                    
+
                     <div className="mt-4 p-4 bg-yellow-100 border-2 border-yellow-300 rounded-lg text-sm text-yellow-800">
                       <div className="flex items-center">
                         <span className="mr-2">⚡</span>
                         <strong>Action needed:</strong>
                       </div>
-                      <p className="mt-1">Please contact your ASHA worker to reschedule this appointment.</p>
+                      <p className="mt-1">
+                        Please contact your ASHA worker to reschedule this
+                        appointment.
+                      </p>
                     </div>
                   </div>
                 ))}
