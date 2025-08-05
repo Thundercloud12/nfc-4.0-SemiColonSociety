@@ -19,45 +19,60 @@ export async function GET() {
 
         await connectDb();
 
-        // Get the family member's details to find linked patient
+        // Get the family member's details
         const familyMember = await User.findById(session.user.id);
         
-        if (!familyMember) {
+        if (!familyMember || !familyMember.familyOf) {
             return NextResponse.json(
-                { error: "No linked patient found" },
+                { error: "No linked patient found for this family member" },
                 { status: 404 }
             );
         }
 
-        // Get the patient details with populated data
-        const patient = await User.findById(familyMember.linkedPatientId)
-            .populate({
-                path: 'symptomLogs',
-                options: { sort: { createdAt: -1 }, limit: 10 } // Get latest 10 symptom logs
-            })
-            .populate({
-                path: 'appointments',
-                options: { sort: { date: -1 }, limit: 5 } // Get latest 5 appointments
-            })
+        // Get the linked pregnant woman's details
+        const patient = await User.findById(familyMember.familyOf)
+            .select('-password') // Exclude password
             .lean();
+
+
 
         if (!patient) {
             return NextResponse.json(
-                { error: "Patient not found" },
+                { error: "Linked patient not found" },
                 { status: 404 }
             );
         }
+        console.log(patient);
+        
+        // Get recent symptom logs for this patient
+        const symptomLogs = await SymptomLog.find({ patient: patient._id })
+            .sort({ createdAt: -1 })
+            .limit(10)
+            .lean();
 
-        // Remove sensitive information
+            console.log(symptomLogs);
+            
+
+        // Get recent appointments for this patient  
+        const appointments = await Appointment.find({ patient: patient._id })
+            .sort({ date: -1 })
+            .limit(5)
+            .lean();
+
+            console.log(appointments);
+            
+        // Prepare patient info with additional data
         const patientInfo = {
             _id: patient._id,
             name: patient.name,
             phone: patient.phone,
+            email: patient.email,
             pregnancyInfo: patient.pregnancyInfo,
             location: patient.location,
-            createdAt: patient.createdAt,
-            symptomLogs: patient.symptomLogs || [],
-            appointments: patient.appointments || []
+            memberSince: patient.createdAt,
+            symptomLogs: symptomLogs,
+            appointments: appointments,
+            uniqueCode: patient.uniqueCode
         };
 
         return NextResponse.json({

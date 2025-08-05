@@ -7,6 +7,8 @@ const urlsToCache = [
   '/',
   '/login',
   '/register',
+  '/family-dashboard',
+  '/asha-dashboard',
   '/manifest.json'
 ];
 
@@ -84,6 +86,17 @@ async function handleApiRequest(request) {
     // Try network first
     const response = await fetch(request.clone());
     
+    // Cache successful GET responses for family and ASHA data
+    if (response.ok && request.method === 'GET') {
+      if (url.pathname === '/api/family/patient-details' || 
+          url.pathname.startsWith('/api/asha/patient/')) {
+        const responseClone = response.clone();
+        caches.open('api-data-v1').then((cache) => {
+          cache.put(request, responseClone);
+        });
+      }
+    }
+    
     // If successful, process any pending offline data
     if (response.ok && navigator.onLine) {
       processOfflineQueue();
@@ -93,9 +106,23 @@ async function handleApiRequest(request) {
   } catch (error) {
     console.log('[SW] Network request failed, handling offline:', url.pathname);
     
+    // Try to return cached data for GET requests
+    if (request.method === 'GET') {
+      if (url.pathname === '/api/family/patient-details' || 
+          url.pathname.startsWith('/api/asha/patient/')) {
+        const cachedResponse = await caches.match(request);
+        if (cachedResponse) {
+          console.log('[SW] Returning cached data for:', url.pathname);
+          return cachedResponse;
+        }
+      }
+    }
+    
     // Handle specific offline scenarios
     if (url.pathname === '/api/patient/symptom-log' || 
-        url.pathname === '/api/asha/appointments') {
+        url.pathname === '/api/asha/appointments' ||
+        url.pathname === '/api/family/patient-details' ||
+        url.pathname.startsWith('/api/asha/patient/')) {
       
       if (request.method === 'POST') {
         // Store offline data

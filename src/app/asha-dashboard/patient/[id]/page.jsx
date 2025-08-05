@@ -3,6 +3,16 @@
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import OfflineStatus from "@/components/OfflineStatus";
+
+// Initialize offline manager
+let offlineManager = null;
+if (typeof window !== 'undefined') {
+  import('@/lib/offlineManager').then((module) => {
+    const OfflineManager = module.default;
+    offlineManager = new OfflineManager();
+  });
+}
 
 export default function PatientDetails() {
   const { data: session, status } = useSession();
@@ -15,6 +25,8 @@ export default function PatientDetails() {
   const [error, setError] = useState("");
   const [editingActions, setEditingActions] = useState({});
   const [newAction, setNewAction] = useState({});
+  const [isOffline, setIsOffline] = useState(false);
+  const [offlineMessage, setOfflineMessage] = useState("");
 
   useEffect(() => {
     if (status === "loading") return;
@@ -32,22 +44,127 @@ export default function PatientDetails() {
     if (patientId) {
       fetchPatientDetails();
     }
+
+    // Setup offline/online listeners
+    setIsOffline(!navigator.onLine);
+    const handleOnline = () => {
+      setIsOffline(false);
+      setOfflineMessage("Connection restored! Attempting to refresh patient data...");
+      if (patientId) fetchPatientDetails(); // Refresh data when back online
+      setTimeout(() => setOfflineMessage(""), 3000);
+    };
+    const handleOffline = () => {
+      setIsOffline(true);
+      setOfflineMessage("You're offline. Showing cached patient data.");
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
   }, [session, status, router, patientId]);
 
   const fetchPatientDetails = async () => {
+    setLoading(true);
     try {
+      // Check if offline and try to load cached data first
+      if (!navigator.onLine && offlineManager && session?.user?.id) {
+        const cachedData = await loadCachedPatientData();
+        if (cachedData) {
+          setPatient(cachedData.patient);
+          setOfflineMessage("📱 Showing offline patient data. Connect to internet for latest updates.");
+          setLoading(false);
+          return;
+        }
+      }
+
       const response = await fetch(`/api/asha/patient/${patientId}`);
       if (response.ok) {
         const data = await response.json();
         setPatient(data.patient);
+        
+        // Cache the patient data for offline use
+        if (offlineManager && session?.user?.id) {
+          await cachePatientData(data.patient);
+        }
+        
+        setOfflineMessage("");
       } else {
         const errorData = await response.json();
+        
+        // If network error and we have cached data, use it
+        if (!navigator.onLine && offlineManager && session?.user?.id) {
+          const cachedData = await loadCachedPatientData();
+          if (cachedData) {
+            setPatient(cachedData.patient);
+            setOfflineMessage("📱 Network error. Showing cached patient data.");
+            return;
+          }
+        }
+        
         setError(errorData.error || "Failed to fetch patient details");
       }
     } catch (error) {
+      console.error("Error fetching patient details:", error);
+      
+      // Try to load cached data on error
+      if (offlineManager && session?.user?.id) {
+        const cachedData = await loadCachedPatientData();
+        if (cachedData) {
+          setPatient(cachedData.patient);
+          setOfflineMessage("📱 Connection error. Showing cached patient data.");
+          return;
+        }
+      }
+      
       setError("Error loading patient details");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Cache patient data for offline use
+  const cachePatientData = async (patientData) => {
+    try {
+      if (!offlineManager || !session?.user?.id || !patientId) return;
+      
+      await offlineManager.storeAshaPatientDataOffline(
+        session.user.id, 
+        patientId, 
+        patientData
+      );
+      console.log('[AshaPatientDetails] Patient data cached for offline use');
+    } catch (error) {
+      console.error('[AshaPatientDetails] Error caching patient data:', error);
+    }
+  };
+
+  // Load cached patient data
+  const loadCachedPatientData = async () => {
+    try {
+      if (!offlineManager || !session?.user?.id || !patientId) return null;
+      
+      const cachedData = await offlineManager.getCachedAshaPatientData(
+        session.user.id, 
+        patientId
+      );
+      
+      if (cachedData) {
+        // Check if data is not too old (24 hours)
+        const isDataFresh = (Date.now() - cachedData.cachedAt) < (24 * 60 * 60 * 1000);
+        if (isDataFresh) {
+          console.log('[AshaPatientDetails] Using cached patient data');
+          return cachedData;
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('[AshaPatientDetails] Error loading cached patient data:', error);
+      return null;
     }
   };
 
@@ -74,6 +191,7 @@ export default function PatientDetails() {
   };
 
   const getPriorityColor = (priority) => {
+    let colorClass;
     switch (priority?.toUpperCase()) {
       case "LOW":
         return "bg-green-100 text-green-800 border-green-200";
@@ -176,6 +294,34 @@ export default function PatientDetails() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-50 p-6">
+      {/* Offline Status */}
+      <OfflineStatus />
+      
+      {/* Offline Message */}
+      {(isOffline || offlineMessage) && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
+          <div className={`px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 ${
+            isOffline ? 'bg-orange-100 border-2 border-orange-300 text-orange-800' : 
+            'bg-green-100 border-2 border-green-300 text-green-800'
+          }`}>
+            <span className="text-lg">
+              {isOffline ? '📴' : '🌐'}
+            </span>
+            <span className="font-medium">
+              {offlineMessage || (isOffline ? 'You are offline. Showing cached patient data.' : 'Online')}
+            </span>
+            {offlineMessage && (
+              <button 
+                onClick={() => setOfflineMessage("")}
+                className="ml-2 text-lg hover:opacity-70"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-xl shadow-lg p-8 mb-6">

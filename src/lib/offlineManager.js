@@ -2,7 +2,7 @@
 class OfflineManager {
   constructor() {
     this.dbName = 'MaternalCareOffline';
-    this.dbVersion = 1;
+    this.dbVersion = 2; // Incremented for new stores
     this.db = null;
     this.isOnline = navigator.onLine;
     this.pendingSync = [];
@@ -62,6 +62,24 @@ class OfflineManager {
           });
           store.createIndex('timestamp', 'timestamp', { unique: false });
           store.createIndex('ashaId', 'ashaId', { unique: false });
+        }
+        
+        // Create family data cache store
+        if (!db.objectStoreNames.contains('family_data_cache')) {
+          const store = db.createObjectStore('family_data_cache', { 
+            keyPath: 'familyMemberId'
+          });
+          store.createIndex('cachedAt', 'cachedAt', { unique: false });
+        }
+        
+        // Create ASHA patient data cache store
+        if (!db.objectStoreNames.contains('asha_patient_cache')) {
+          const store = db.createObjectStore('asha_patient_cache', { 
+            keyPath: 'cacheKey' // Format: "ashaId_patientId"
+          });
+          store.createIndex('ashaId', 'ashaId', { unique: false });
+          store.createIndex('patientId', 'patientId', { unique: false });
+          store.createIndex('cachedAt', 'cachedAt', { unique: false });
         }
       };
     });
@@ -340,6 +358,94 @@ class OfflineManager {
   // Check if online
   isConnected() {
     return this.isOnline;
+  }
+
+  // Store family data for offline viewing
+  async storeFamilyDataOffline(familyData) {
+    try {
+      if (!this.db) await this.initializeDB();
+      
+      const transaction = this.db.transaction(['family_data_cache'], 'readwrite');
+      const store = transaction.objectStore('family_data_cache');
+      
+      await store.put(familyData);
+      console.log('[OfflineManager] Family data cached for offline viewing');
+      
+      return { success: true };
+    } catch (error) {
+      console.error('[OfflineManager] Error storing family data offline:', error);
+      throw error;
+    }
+  }
+
+  // Get cached family data
+  async getCachedFamilyData(familyMemberId) {
+    try {
+      if (!this.db) await this.initializeDB();
+      
+      const transaction = this.db.transaction(['family_data_cache'], 'readonly');
+      const store = transaction.objectStore('family_data_cache');
+      
+      const request = store.get(familyMemberId);
+      const result = await new Promise((resolve, reject) => {
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      
+      return result || null;
+    } catch (error) {
+      console.error('[OfflineManager] Error getting cached family data:', error);
+      return null;
+    }
+  }
+
+  // Store ASHA patient data for offline viewing
+  async storeAshaPatientDataOffline(ashaId, patientId, patientData) {
+    try {
+      if (!this.db) await this.initializeDB();
+      
+      const cacheKey = `${ashaId}_${patientId}`;
+      const cacheData = {
+        cacheKey,
+        ashaId,
+        patientId,
+        patient: patientData,
+        cachedAt: Date.now()
+      };
+      
+      const transaction = this.db.transaction(['asha_patient_cache'], 'readwrite');
+      const store = transaction.objectStore('asha_patient_cache');
+      
+      await store.put(cacheData);
+      console.log('[OfflineManager] ASHA patient data cached for offline viewing');
+      
+      return { success: true };
+    } catch (error) {
+      console.error('[OfflineManager] Error storing ASHA patient data offline:', error);
+      throw error;
+    }
+  }
+
+  // Get cached ASHA patient data
+  async getCachedAshaPatientData(ashaId, patientId) {
+    try {
+      if (!this.db) await this.initializeDB();
+      
+      const cacheKey = `${ashaId}_${patientId}`;
+      const transaction = this.db.transaction(['asha_patient_cache'], 'readonly');
+      const store = transaction.objectStore('asha_patient_cache');
+      
+      const request = store.get(cacheKey);
+      const result = await new Promise((resolve, reject) => {
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      
+      return result || null;
+    } catch (error) {
+      console.error('[OfflineManager] Error getting cached ASHA patient data:', error);
+      return null;
+    }
   }
 
   // Manual sync trigger

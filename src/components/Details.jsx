@@ -1,3 +1,6 @@
+"use client";
+
+
 import Image from "next/image";
 import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
 
@@ -9,6 +12,10 @@ const ImageOverlay = ({ src, alt, title, description }) => (
       fill
       priority
       className="object-cover transition-transform duration-500 group-hover:scale-110"
+      onError={(e) => {
+        console.error(`Failed to load image: ${src}`);
+        e.target.style.display = 'none';
+      }}
     />
 
     {/* Gradient Overlay */}

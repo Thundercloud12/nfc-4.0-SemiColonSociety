@@ -26,7 +26,7 @@ export const authOptions= {
 
                     // Find the pregnant patient with this unique code
                     const patient = await User.findOne({ 
-                        uniqueCode: identifier,
+                        uniqueCode: identifier.toUpperCase(),
                         role: "pregnant"
                     });
 
@@ -36,7 +36,7 @@ export const authOptions= {
 
                     // Find or create family member account
                     let familyMember = await User.findOne({
-                        linkedPatientId: patient._id,
+                        familyOf: patient._id,
                         role: "family"
                     });
 
@@ -54,12 +54,10 @@ export const authOptions= {
                         familyMember = new User({
                             name: `Family of ${patient.name}`,
                             phone: `family_${patient.phone}`,
-                            email: `family_${patient.email || patient.phone}@family.local`,
                             password: hashedPassword,
                             role: "family",
-                            linkedPatientId: patient._id,
-                            uniqueCode: identifier,
-                            isVerified: true
+                            familyOf: patient._id,
+                            uniqueCode: identifier.toUpperCase()
                         });
 
                         await familyMember.save();
@@ -68,9 +66,9 @@ export const authOptions= {
                     return {
                         id: familyMember._id.toString(),
                         name: familyMember.name,
-                        email: familyMember.email,
+                        phone: familyMember.phone,
                         role: "family",
-                        linkedPatientId: patient._id.toString(),
+                        familyOf: patient._id.toString(),
                         patientName: patient.name,
                     };
                 } else {
@@ -103,7 +101,7 @@ export const authOptions= {
                 token.id = user.id;
                 token.name = user.name;
                 token.role = user.role;
-                token.linkedPatientId = user.linkedPatientId;
+                token.familyOf = user.familyOf;
                 token.patientName = user.patientName;
             }
 
@@ -115,7 +113,7 @@ export const authOptions= {
                 session.user.id = token.id;
                 session.user.name = token.name;
                 session.user.role = token.role;
-                session.user.linkedPatientId = token.linkedPatientId;
+                session.user.familyOf = token.familyOf;
                 session.user.patientName = token.patientName;
             }
             
