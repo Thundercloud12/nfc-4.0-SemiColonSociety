@@ -1,5 +1,9 @@
 'use client';
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
+
+// Dynamically import LocationMap to avoid SSR issues
+const LocationMap = dynamic(() => import('../../components/LocationMap'), { ssr: false });
 
 export default function RegisterForm() {
     const [formData, setFormData] = useState({
@@ -16,17 +20,177 @@ export default function RegisterForm() {
         highRisk: false,
         // Family specific
         uniqueCode: '',
+        // Location data
+        location: null,
     });
 
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
+    const [locationLoading, setLocationLoading] = useState(false);
+    const [locationError, setLocationError] = useState('');
+    const [showMap, setShowMap] = useState(false);
+    const [mapCenter, setMapCenter] = useState([20.5937, 78.9629]); // Default center of India
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
+        console.log('Input change:', { name, value, type }); // Debug log
         setFormData(prev => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : value
         }));
+    };
+
+    const getCurrentLocation = () => {
+        setLocationLoading(true);
+        setLocationError('');
+        
+        if (!navigator.geolocation) {
+            setLocationError('Geolocation is not supported by this browser.');
+            setLocationLoading(false);
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                
+                try {
+                    // Reverse geocoding using OpenStreetMap Nominatim API
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`
+                    );
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const address = data.address || {};
+                        
+                        const locationData = {
+                            coordinates: { latitude, longitude },
+                            address: data.display_name || '',
+                            city: address.city || address.town || address.village || '',
+                            state: address.state || '',
+                            country: address.country || '',
+                            postalCode: address.postcode || ''
+                        };
+                        
+                        setFormData(prev => ({
+                            ...prev,
+                            location: locationData
+                        }));
+                        
+                        // Set map center and show map
+                        setMapCenter([latitude, longitude]);
+                        setShowMap(true);
+                        
+                        console.log('Location captured:', locationData);
+                    } else {
+                        setLocationError('Failed to get address details');
+                    }
+                } catch (error) {
+                    console.error('Error getting address:', error);
+                    setLocationError('Failed to get address details');
+                    
+                    // Still save coordinates even if address lookup fails
+                    const locationData = {
+                        coordinates: { latitude, longitude },
+                        address: `${latitude}, ${longitude}`,
+                        city: '',
+                        state: '',
+                        country: '',
+                        postalCode: ''
+                    };
+                    
+                    setFormData(prev => ({
+                        ...prev,
+                        location: locationData
+                    }));
+                    
+                    // Set map center and show map
+                    setMapCenter([latitude, longitude]);
+                    setShowMap(true);
+                }
+                
+                setLocationLoading(false);
+            },
+            (error) => {
+                console.error('Geolocation error:', error);
+                let errorMessage = 'Failed to get location. ';
+                
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMessage += 'Location access denied by user.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMessage += 'Location information unavailable.';
+                        break;
+                    case error.TIMEOUT:
+                        errorMessage += 'Location request timed out.';
+                        break;
+                    default:
+                        errorMessage += 'Unknown error occurred.';
+                        break;
+                }
+                
+                setLocationError(errorMessage);
+                setLocationLoading(false);
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 300000 // 5 minutes
+            }
+        );
+    };
+
+    const handleMapClick = async (e) => {
+        const { lat, lng } = e.latlng;
+        
+        try {
+            // Reverse geocoding for the new location
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`
+            );
+            
+            if (response.ok) {
+                const data = await response.json();
+                const address = data.address || {};
+                
+                const locationData = {
+                    coordinates: { latitude: lat, longitude: lng },
+                    address: data.display_name || '',
+                    city: address.city || address.town || address.village || '',
+                    state: address.state || '',
+                    country: address.country || '',
+                    postalCode: address.postcode || ''
+                };
+                
+                setFormData(prev => ({
+                    ...prev,
+                    location: locationData
+                }));
+                
+                setMapCenter([lat, lng]);
+                console.log('Updated location:', locationData);
+            }
+        } catch (error) {
+            console.error('Error getting address for clicked location:', error);
+            // Still update with coordinates
+            const locationData = {
+                coordinates: { latitude: lat, longitude: lng },
+                address: `${lat}, ${lng}`,
+                city: '',
+                state: '',
+                country: '',
+                postalCode: ''
+            };
+            
+            setFormData(prev => ({
+                ...prev,
+                location: locationData
+            }));
+            
+            setMapCenter([lat, lng]);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -43,6 +207,7 @@ export default function RegisterForm() {
                 password: formData.password,
                 role: formData.role,
                 languagePreference: formData.languagePreference,
+                location: formData.location // Include location data
             };
 
             // Add role-specific data
@@ -56,7 +221,8 @@ export default function RegisterForm() {
             } else if (formData.role === 'family') {
                 submitData.uniqueCode = formData.uniqueCode;
             }
-
+            console.log(formData);
+            
             const response = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: {
@@ -85,11 +251,15 @@ export default function RegisterForm() {
                     expectedDeliveryDate: '',
                     highRisk: false,
                     uniqueCode: '',
+                    location: null, // Reset location
                 });
             } else {
                 setMessage(`Error: ${result.error}`);
             }
         } catch (error) {
+            console.log(formData);
+            console.log(error);
+            
             setMessage('Error: Failed to register. Please try again.');
         } finally {
             setLoading(false);
@@ -126,6 +296,7 @@ export default function RegisterForm() {
                         value={formData.phone}
                         onChange={handleInputChange}
                         required
+                        placeholder="Enter your phone number"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                 </div>
@@ -135,7 +306,7 @@ export default function RegisterForm() {
                         Email *
                     </label>
                     <input
-                        type="tel"
+                        type="email"
                         name="email"
                         value={formData.email}
                         onChange={handleInputChange}
@@ -191,6 +362,101 @@ export default function RegisterForm() {
                         <option value="gu">Gujarati</option>
                         <option value="en">English</option>
                     </select>
+                </div>
+
+                {/* Location Section */}
+                <div className="border-t pt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Location (Optional but Recommended)
+                    </label>
+                    
+                    {!formData.location ? (
+                        <div>
+                            <button
+                                type="button"
+                                onClick={getCurrentLocation}
+                                disabled={locationLoading}
+                                className="w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                {locationLoading ? "Getting Location..." : "📍 Get Current Location"}
+                            </button>
+                            
+                            {locationError && (
+                                <div className="mt-2 p-2 bg-red-100 border border-red-300 text-red-700 rounded text-sm">
+                                    {locationError}
+                                </div>
+                            )}
+                            
+                            <p className="text-xs text-gray-500 mt-2">
+                                Location helps ASHA workers provide better local healthcare services.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            <div className="bg-green-50 border border-green-300 rounded-md p-3">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <p className="text-sm font-medium text-green-800">
+                                            ✅ Location Captured
+                                        </p>
+                                        <p className="text-sm text-green-700 mt-1">
+                                            {formData.location.address || `${formData.location.coordinates.latitude}, ${formData.location.coordinates.longitude}`}
+                                        </p>
+                                        {formData.location.city && (
+                                            <p className="text-xs text-green-600 mt-1">
+                                                {formData.location.city}, {formData.location.state}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setFormData(prev => ({ ...prev, location: null }));
+                                            setShowMap(false);
+                                        }}
+                                        className="text-green-600 hover:text-green-800 text-sm"
+                                    >
+                                        Clear
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            {showMap && (
+                                <div className="space-y-2">
+                                    <div className="flex justify-between items-center">
+                                        <p className="text-sm text-gray-600">
+                                            Click on the map to adjust your location
+                                        </p>
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowMap(false)}
+                                            className="text-sm text-gray-500 hover:text-gray-700"
+                                        >
+                                            Hide Map
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="h-64 w-full border border-gray-300 rounded-md overflow-hidden">
+                                        <LocationMap
+                                            center={mapCenter}
+                                            location={formData.location}
+                                            onMapClick={handleMapClick}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                            
+                            {!showMap && (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowMap(true)}
+                                    className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+                                >
+                                    🗺️ Show Map to Adjust Location
+                                </button>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Pregnant Woman Specific Fields */}

@@ -1,6 +1,7 @@
 'use client';
-import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { useState, useEffect } from 'react';
+import { signIn, useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 export default function OTPLogin() {
   const [identifier, setIdentifier] = useState('');
@@ -8,6 +9,32 @@ export default function OTPLogin() {
   const [otp, setOtp] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const { data: session } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (session) {
+      // Redirect based on user role
+      if (session.user.role === "asha") {
+        router.push("/asha-dashboard");
+      } else if (session.user.role === "pregnant") {
+        router.push("/patient-dashboard");
+      } else {
+        router.push("/"); // Default redirect for other roles
+      }
+    }
+  }, [session, router]);
+
+  useEffect(() => {
+    if (session) {
+      // Redirect based on user role
+      if (session.user.role === 'asha') {
+        router.push('/asha-dashboard');
+      } else {
+        router.push('/'); // Default redirect for other roles
+      }
+    }
+  }, [session, router]);
 
   const requestOtp = async (e) => {
     e.preventDefault();
@@ -16,7 +43,7 @@ export default function OTPLogin() {
     try {
       const res = await fetch('/api/auth/send', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier }),
       });
       const data = await res.json();
@@ -41,7 +68,7 @@ export default function OTPLogin() {
       // First verify OTP backend API
       const verifyRes = await fetch('/api/auth/verify-otp', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier, otp }),
       });
       const verifyData = await verifyRes.json();
@@ -52,7 +79,7 @@ export default function OTPLogin() {
       }
 
       // Sign in via next-auth
-      const result = await signIn("credentials", {
+      const result = await signIn('credentials', {
         redirect: false,
         identifier,
         otp,
@@ -62,7 +89,7 @@ export default function OTPLogin() {
         setMessage(`Login Failed: ${result.error}`);
       } else {
         setMessage('Logged in successfully!');
-        // Optionally add redirect logic here
+        // Session will be updated and redirect will happen via useEffect
       }
     } catch (err) {
       setMessage('Error verifying OTP. Try again.');
@@ -118,7 +145,13 @@ export default function OTPLogin() {
       )}
 
       {message && (
-        <div className={`mt-4 p-3 rounded text-sm ${message.startsWith('Error') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+        <div
+          className={`mt-4 p-3 rounded text-sm ${
+            message.startsWith('Error')
+              ? 'bg-red-100 text-red-700'
+              : 'bg-green-100 text-green-700'
+          }`}
+        >
           {message}
         </div>
       )}
