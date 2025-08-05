@@ -238,7 +238,7 @@ export default function OTPLogin() {
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-600">
               Don't have an account?{' '}
-              <a href="/register" className="text-pink-600 hover:text-pink-700 font-semibold transition-colors">
+              <a href="/patient-dashboard" className="text-pink-600 hover:text-pink-700 font-semibold transition-colors">
                 Sign up here
               </a>
             </p>

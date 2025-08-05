@@ -164,7 +164,7 @@ export default function SymptomLogger() {
         if (offlineResult.success) {
           const offlineMessage = {
             type: "bot",
-            content: `💾 Your symptoms have been saved offline successfully!\n\n📊 **Symptoms Logged Locally**\n\nYour symptom data has been stored on your device and will be automatically synced to the server when your internet connection is restored.\n\n📱 You can continue using the app offline - all your data will be safely stored.`,
+            content: ` Your symptoms have been saved offline successfully!\n\n **Symptoms Logged Locally**\n\nYour symptom data has been stored on your device and will be automatically synced to the server when your internet connection is restored.\n\n📱 You can continue using the app offline - all your data will be safely stored.`,
             timestamp: new Date()
           };
           
@@ -190,7 +190,7 @@ export default function SymptomLogger() {
         if (result.priority) {
           const priorityMessage = {
             type: "bot",
-            content: `✅ Your symptoms have been logged successfully.\n\n📊 **Priority Assessment: ${result.priority}**\n\n${result.priorityMessage || ''}\n\n${result.priority === 'HIGH' ? '🚨 Please contact your healthcare provider immediately.' : result.priority === 'MEDIUM' ? '⚠️ Please monitor these symptoms and consult your healthcare provider if they worsen.' : '📝 Continue tracking your symptoms regularly.'}`,
+            content: ` Your symptoms have been logged successfully.\n\n**Priority Assessment: ${result.priority}**\n\n${result.priorityMessage || ''}\n\n${result.priority === 'HIGH' ? '🚨 Please contact your healthcare provider immediately.' : result.priority === 'MEDIUM' ? '⚠️ Please monitor these symptoms and consult your healthcare provider if they worsen.' : '📝 Continue tracking your symptoms regularly.'}`,
             timestamp: new Date()
           };
           
@@ -219,7 +219,7 @@ export default function SymptomLogger() {
           if (offlineResult.success) {
             const offlineMessage = {
               type: "bot",
-              content: `💾 Connection issue detected. Your symptoms have been saved offline and will sync when connection is restored.\n\n📊 **Symptoms Stored Locally**\n\nDon't worry - your data is safe and will be automatically uploaded when you're back online.`,
+              content: `Connection issue detected. Your symptoms have been saved offline and will sync when connection is restored.\n\n📊 **Symptoms Stored Locally**\n\nDon't worry - your data is safe and will be automatically uploaded when you're back online.`,
               timestamp: new Date()
             };
             
@@ -279,12 +279,10 @@ export default function SymptomLogger() {
       
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 border-t-4 border-pink-500">
+        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <div className="bg-pink-100 w-16 h-16 rounded-full flex items-center justify-center mr-4">
-                <span className="text-2xl">📝</span>
-              </div>
+              
               <div>
                 <h1 className="text-3xl font-bold text-gray-800 mb-2 flex items-center">
                   Symptom Logger
@@ -296,18 +294,13 @@ export default function SymptomLogger() {
                 </h1>
                 <p className="text-gray-600 text-lg">
                   {isOffline 
-                    ? "Offline mode: Your symptoms will be saved locally 💾" 
-                    : "Describe your symptoms and I'll help log them 💬"
+                    ? "Offline mode: Your symptoms will be saved locally " 
+                    : "Describe your symptoms and I'll help log them "
                   }
                 </p>
               </div>
             </div>
-            <button
-              onClick={() => router.push("/patient-dashboard")}
-              className="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl hover:from-gray-600 hover:to-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-            >
-              ← Back to Dashboard
-            </button>
+            
           </div>
         </div>
 
@@ -383,7 +376,7 @@ export default function SymptomLogger() {
                 <button
                   onClick={handleSendMessage}
                   disabled={isLoading || !currentMessage.trim()}
-                  className="px-8 py-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-xl hover:from-pink-600 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  className="px-8 py-2 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-xl hover:from-pink-600 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
                   {isLoading ? (
                     <span className="flex items-center">
@@ -394,7 +387,7 @@ export default function SymptomLogger() {
                       Sending...
                     </span>
                   ) : (
-                    "📤 Send"
+                    " Send"
                   )}
                 </button>
               </div>
