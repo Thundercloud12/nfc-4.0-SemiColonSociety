@@ -17,6 +17,17 @@ export default function SymptomLogger() {
   const [isOffline, setIsOffline] = useState(false);
   const messagesEndRef = useRef(null);
 
+  // Audio-related states
+  const [isListening, setIsListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(false);
+  const [ttsSupported, setTtsSupported] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(false);
+  
+  // Audio refs
+  const recognitionRef = useRef(null);
+  const synthRef = useRef(null);
+
   useEffect(() => {
     if (status === "loading") return;
     
@@ -33,6 +44,9 @@ export default function SymptomLogger() {
     // Initialize conversation
     initializeConversation();
     
+    // Initialize audio features
+    initializeAudio();
+    
     // Check initial offline status
     setIsOffline(!navigator.onLine);
     
@@ -46,8 +60,142 @@ export default function SymptomLogger() {
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      // Cleanup audio
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      if (synthRef.current) {
+        speechSynthesis.cancel();
+      }
     };
   }, [session, status, router]);
+
+  // Audio initialization
+  const initializeAudio = () => {
+    // Check for Speech Recognition support
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      setSpeechSupported(true);
+      recognitionRef.current = new SpeechRecognition();
+      
+      // Configure recognition settings
+      recognitionRef.current.continuous = true; // Keep listening
+      recognitionRef.current.interimResults = true; // Show interim results
+      recognitionRef.current.lang = 'en-US';
+      recognitionRef.current.maxAlternatives = 1;
+
+      recognitionRef.current.onstart = () => {
+        console.log('Speech recognition started');
+        setIsListening(true);
+      };
+
+      recognitionRef.current.onresult = (event) => {
+        console.log('Speech recognition result:', event);
+        
+        let finalTranscript = '';
+        let interimTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript;
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+
+        console.log('Final transcript:', finalTranscript);
+        console.log('Interim transcript:', interimTranscript);
+
+        // Update the message with final transcript
+        if (finalTranscript) {
+          setCurrentMessage(prev => {
+            const newMessage = prev ? prev + ' ' + finalTranscript : finalTranscript;
+            console.log('Updated current message:', newMessage);
+            return newMessage;
+          });
+        }
+      };
+
+      recognitionRef.current.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        console.error('Error details:', event);
+        setIsListening(false);
+        
+        // Handle specific errors
+        if (event.error === 'not-allowed') {
+          alert('Microphone access denied. Please allow microphone access and try again.');
+        } else if (event.error === 'no-speech') {
+          console.log('No speech detected, restarting...');
+          // Auto-restart if no speech detected
+          setTimeout(() => {
+            if (recognitionRef.current && speechSupported) {
+              try {
+                recognitionRef.current.start();
+              } catch (err) {
+                console.error('Error restarting recognition:', err);
+              }
+            }
+          }, 1000);
+        }
+      };
+
+      recognitionRef.current.onend = () => {
+        console.log('Speech recognition ended');
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onnomatch = () => {
+        console.log('No speech match found');
+      };
+
+      recognitionRef.current.onspeechstart = () => {
+        console.log('Speech started');
+      };
+
+      recognitionRef.current.onspeechend = () => {
+        console.log('Speech ended');
+      };
+
+    } else {
+      console.warn('Speech Recognition not supported in this browser');
+    }
+
+    // Check for Speech Synthesis support
+    if ('speechSynthesis' in window) {
+      setTtsSupported(true);
+      synthRef.current = speechSynthesis;
+    } else {
+      console.warn('Speech Synthesis not supported in this browser');
+    }
+  };
+
+  // Separate useEffect for keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      // Space bar to toggle voice recording (when not typing)
+      if (event.code === 'Space' && event.ctrlKey && speechSupported) {
+        event.preventDefault();
+        if (isListening) {
+          stopListening();
+        } else {
+          startListening();
+        }
+      }
+      // Escape to stop all audio
+      if (event.code === 'Escape') {
+        if (isListening) stopListening();
+        if (isSpeaking) stopSpeaking();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [speechSupported, isListening, isSpeaking]);
 
   useEffect(() => {
     scrollToBottom();
@@ -113,6 +261,17 @@ export default function SymptomLogger() {
         };
 
         setMessages(prev => [...prev, botMessage]);
+
+        // Speak the bot response if audio is enabled
+        if (audioEnabled && data.response) {
+          console.log('Audio enabled, scheduling TTS for bot response');
+          setTimeout(() => {
+            console.log('Attempting to speak bot response:', data.response.substring(0, 100) + '...');
+            speakText(data.response);
+          }, 500); // Small delay for better UX
+        } else {
+          console.log('TTS not triggered:', { audioEnabled, hasResponse: !!data.response });
+        }
 
         // If session should end, process the structured data
         if (shouldStop && data.structuredData) {
@@ -258,6 +417,135 @@ export default function SymptomLogger() {
     initializeConversation();
   };
 
+  // Audio Functions
+  const startListening = () => {
+    if (!speechSupported) {
+      alert('Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari.');
+      return;
+    }
+
+    if (!recognitionRef.current) {
+      console.error('Speech recognition not initialized');
+      return;
+    }
+
+    if (isListening) {
+      console.log('Already listening');
+      return;
+    }
+
+    try {
+      console.log('Attempting to start speech recognition...');
+      recognitionRef.current.start();
+    } catch (error) {
+      console.error('Error starting speech recognition:', error);
+      
+      if (error.name === 'InvalidStateError') {
+        // Recognition is already running, stop it first
+        console.log('Recognition already running, stopping first...');
+        recognitionRef.current.stop();
+        setTimeout(() => {
+          try {
+            recognitionRef.current.start();
+          } catch (retryError) {
+            console.error('Retry error:', retryError);
+          }
+        }, 100);
+      } else {
+        alert('Could not start voice recognition. Please check your microphone permissions.');
+      }
+    }
+  };
+
+  const stopListening = () => {
+    if (recognitionRef.current && isListening) {
+      console.log('Stopping speech recognition...');
+      try {
+        recognitionRef.current.stop();
+      } catch (error) {
+        console.error('Error stopping recognition:', error);
+      }
+    }
+  };
+
+  const speakText = (text) => {
+    console.log('speakText called with:', { text, ttsSupported, audioEnabled, synthRef: !!synthRef.current });
+    
+    if (!synthRef.current) {
+      console.warn('Speech synthesis not available');
+      return;
+    }
+    
+    if (!ttsSupported) {
+      console.warn('TTS not supported');
+      return;
+    }
+    
+    if (!audioEnabled) {
+      console.log('Audio not enabled by user');
+      return;
+    }
+
+    try {
+      // Cancel any ongoing speech
+      synthRef.current.cancel();
+      
+      // Clean the text for better speech
+      const cleanText = text.replace(/\*\*/g, '').replace(/\*/g, '').replace(/\n/g, ' ').trim();
+      console.log('Speaking cleaned text:', cleanText);
+      
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.rate = 0.8;
+      utterance.pitch = 1;
+      utterance.volume = 0.8;
+      utterance.lang = 'en-US';
+      
+      utterance.onstart = () => {
+        console.log('TTS started');
+        setIsSpeaking(true);
+      };
+      
+      utterance.onend = () => {
+        console.log('TTS ended');
+        setIsSpeaking(false);
+      };
+      
+      utterance.onerror = (event) => {
+        console.error('TTS error:', event);
+        setIsSpeaking(false);
+      };
+      
+      utterance.onpause = () => {
+        console.log('TTS paused');
+      };
+      
+      utterance.onresume = () => {
+        console.log('TTS resumed');
+      };
+      
+      console.log('Starting speech synthesis...');
+      synthRef.current.speak(utterance);
+      
+    } catch (error) {
+      console.error('Error in speakText:', error);
+      setIsSpeaking(false);
+    }
+  };
+
+  const stopSpeaking = () => {
+    if (synthRef.current) {
+      synthRef.current.cancel();
+      setIsSpeaking(false);
+    }
+  };
+
+  const toggleAudio = () => {
+    setAudioEnabled(!audioEnabled);
+    if (isSpeaking) {
+      stopSpeaking();
+    }
+  };
+
   const formatTime = (timestamp) => {
     return new Date(timestamp).toLocaleTimeString("en-IN", {
       hour: "2-digit",
@@ -313,6 +601,37 @@ export default function SymptomLogger() {
 
         {/* Chat Container */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          {/* Audio Status Bar */}
+          {(isListening || isSpeaking) && (
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-b-2 border-purple-100 p-3">
+              <div className="flex items-center justify-center space-x-4">
+                {isListening && (
+                  <div className="flex items-center space-x-2 text-blue-700">
+                    <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-medium">🎤 Listening for speech...</span>
+                    <span className="text-xs text-blue-600">Speak clearly into your microphone</span>
+                    <div className="flex space-x-1">
+                      <div className="w-1 h-4 bg-blue-400 rounded-full animate-bounce"></div>
+                      <div className="w-1 h-4 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: "0.1s"}}></div>
+                      <div className="w-1 h-4 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: "0.2s"}}></div>
+                    </div>
+                  </div>
+                )}
+                {isSpeaking && (
+                  <div className="flex items-center space-x-2 text-purple-700">
+                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-medium">🔊 Speaking response...</span>
+                    <div className="flex space-x-1">
+                      <div className="w-1 h-4 bg-purple-400 rounded-full animate-bounce"></div>
+                      <div className="w-1 h-4 bg-purple-400 rounded-full animate-bounce" style={{animationDelay: "0.1s"}}></div>
+                      <div className="w-1 h-4 bg-purple-400 rounded-full animate-bounce" style={{animationDelay: "0.2s"}}></div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          
           {/* Messages */}
           <div className="h-96 p-6 overflow-y-auto bg-gradient-to-b from-pink-25 to-white scrollbar-thin scrollbar-thumb-pink-300 scrollbar-track-pink-100">
             <div className="space-y-4">
@@ -370,33 +689,92 @@ export default function SymptomLogger() {
                 </button>
               </div>
             ) : (
-              <div className="flex space-x-4">
-                <textarea
-                  value={currentMessage}
-                  onChange={(e) => setCurrentMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Describe your symptoms in detail... (Press Enter to send, Shift+Enter for new line)"
-                  className="flex-1 px-4 py-3 border-2 border-pink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 resize-none transition-all duration-200 text-gray-700"
-                  rows="3"
-                  disabled={isLoading}
-                />
-                <button
-                  onClick={handleSendMessage}
-                  disabled={isLoading || !currentMessage.trim()}
-                  className="px-8 py-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-xl hover:from-pink-600 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                >
-                  {isLoading ? (
-                    <span className="flex items-center">
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Sending...
-                    </span>
-                  ) : (
-                    "📤 Send"
-                  )}
-                </button>
+              <div className="space-y-4">
+                {/* Audio Controls */}
+                <div className="flex items-center justify-between bg-white p-4 rounded-xl border-2 border-pink-200">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium text-gray-700">Audio Features:</span>
+                      <button
+                        onClick={toggleAudio}
+                        className={`px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200 ${
+                          audioEnabled 
+                            ? 'bg-green-100 text-green-800 border border-green-300' 
+                            : 'bg-gray-100 text-gray-600 border border-gray-300'
+                        }`}
+                      >
+                        {audioEnabled ? '🔊 ON' : '🔇 OFF'}
+                      </button>
+                    </div>
+                    
+                    {speechSupported && (
+                      <button
+                        onClick={isListening ? stopListening : startListening}
+                        disabled={isLoading || sessionEnded}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          isListening
+                            ? 'bg-red-100 text-red-800 border-2 border-red-300 animate-pulse'
+                            : 'bg-blue-100 text-blue-800 border-2 border-blue-300 hover:bg-blue-200'
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      >
+                        {isListening ? '⏹️ Stop Listening' : '🎤 Start Speaking'}
+                      </button>
+                    )}
+                    
+                    {ttsSupported && isSpeaking && (
+                      <button
+                        onClick={stopSpeaking}
+                        className="px-4 py-2 bg-orange-100 text-orange-800 border-2 border-orange-300 rounded-lg text-sm font-medium hover:bg-orange-200 transition-all duration-200"
+                      >
+                        🔇 Stop Speaking
+                      </button>
+                    )}
+                    
+                    {ttsSupported && audioEnabled && !isSpeaking && (
+                      <button
+                        onClick={() => speakText("This is a test of the text to speech feature. If you can hear this, the audio is working correctly.")}
+                        className="px-4 py-2 bg-purple-100 text-purple-800 border-2 border-purple-300 rounded-lg text-sm font-medium hover:bg-purple-200 transition-all duration-200"
+                      >
+                        🔊 Test TTS
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div className="text-xs text-gray-500">
+                    {speechSupported ? '🎤 Available' : '🎤 Not supported'} | 
+                    {ttsSupported ? ' 🔊 Available' : ' 🔊 Not supported'}
+                  </div>
+                </div>
+
+                {/* Text Input */}
+                <div className="flex space-x-4">
+                  <textarea
+                    value={currentMessage}
+                    onChange={(e) => setCurrentMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder={`${speechSupported ? 'Type your message or use voice input...' : 'Describe your symptoms in detail...'} (Press Enter to send, Shift+Enter for new line)`}
+                    className="flex-1 px-4 py-3 border-2 border-pink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 resize-none transition-all duration-200 text-gray-700"
+                    rows="3"
+                    disabled={isLoading}
+                  />
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={isLoading || !currentMessage.trim()}
+                    className="px-8 py-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-xl hover:from-pink-600 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  >
+                    {isLoading ? (
+                      <span className="flex items-center">
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Sending...
+                      </span>
+                    ) : (
+                      "📤 Send"
+                    )}
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -408,7 +786,7 @@ export default function SymptomLogger() {
             <span className="bg-blue-100 p-2 rounded-lg mr-3">💡</span>
             <h3 className="font-bold text-blue-800 text-lg">How to use this symptom logger:</h3>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-3 text-sm text-blue-700">
               <div className="flex items-start">
                 <span className="mr-2">•</span>
@@ -429,7 +807,53 @@ export default function SymptomLogger() {
                 <span>Your symptoms will be automatically logged and prioritized</span>
               </div>
             </div>
+            <div className="space-y-3 text-sm text-blue-700">
+              <div className="flex items-start">
+                <span className="mr-2">🎤</span>
+                <span>Click "Start Speaking" to use voice input</span>
+              </div>
+              <div className="flex items-start">
+                <span className="mr-2">🔊</span>
+                <span>Enable audio to hear responses aloud</span>
+              </div>
+            </div>
           </div>
+          
+          {/* Audio Features Info */}
+          {(speechSupported || ttsSupported) && (
+            <div className="mt-4 p-4 bg-green-50 border-2 border-green-200 rounded-lg">
+              <div className="flex items-center text-green-800 mb-2">
+                <span className="mr-2">✨</span>
+                <span className="font-semibold">Audio Features Available</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-green-700 mb-3">
+                {speechSupported && (
+                  <div className="flex items-center">
+                    <span className="mr-2">🎤</span>
+                    <span>Voice input supported - speak your symptoms</span>
+                  </div>
+                )}
+                {ttsSupported && (
+                  <div className="flex items-center">
+                    <span className="mr-2">🔊</span>
+                    <span>Text-to-speech supported - hear responses</span>
+                  </div>
+                )}
+              </div>
+              {speechSupported && (
+                <div className="bg-blue-50 border border-blue-200 rounded p-3 text-sm">
+                  <div className="font-medium text-blue-800 mb-2">🎤 Voice Input Tips:</div>
+                  <div className="text-blue-700 space-y-1">
+                    <div>• Allow microphone access when prompted</div>
+                    <div>• Speak clearly and at normal pace</div>
+                    <div>• Wait for the "Listening..." indicator</div>
+                    <div>• Check browser console (F12) for any errors</div>
+                    <div>• Try refreshing if voice input stops working</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           
           {isOffline && (
             <div className="mt-4 p-4 bg-orange-50 border-2 border-orange-200 rounded-lg">

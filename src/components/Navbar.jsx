@@ -17,6 +17,7 @@ const Navbar = () => {
         <div className="hidden md:flex gap-8 justify-center items-center">
           <Link href="/" className="text-gray-700 hover:text-pink-500 transition">Home</Link>
           <Link href="/appointment" className="text-gray-700 hover:text-pink-500 transition">Appointment</Link>
+          <Link href="/family-login" className="text-gray-700 hover:text-pink-500 transition">Family</Link>
           <Link href="/login" className="px-4 py-2 bg-pink-500 text-white rounded-full hover:bg-pink-600 transition">
             Login
           </Link>
@@ -47,6 +48,13 @@ const Navbar = () => {
             onClick={() => setMenuOpen(false)}
           >
             Appointment
+          </Link>
+          <Link 
+            href="/family-login" 
+            className="block px-6 py-3 text-gray-700 hover:bg-pink-50 hover:text-pink-500"
+            onClick={() => setMenuOpen(false)}
+          >
+            Family
           </Link>
           <Link 
             href="/login" 

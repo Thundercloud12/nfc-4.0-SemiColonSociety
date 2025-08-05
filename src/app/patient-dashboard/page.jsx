@@ -9,6 +9,7 @@ export default function PatientDashboard() {
   const router = useRouter();
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [missedAppointments, setMissedAppointments] = useState([]);
+  const [symptomLogs, setSymptomLogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,7 +26,20 @@ export default function PatientDashboard() {
     }
 
     fetchAppointments();
+    fetchSymptomLogs();
   }, [session, status, router]);
+
+  const fetchSymptomLogs = async () => {
+    try {
+      const response = await fetch("/api/patient/symptom-logs");
+      if (response.ok) {
+        const data = await response.json();
+        setSymptomLogs(data.symptomLogs || []);
+      }
+    } catch (error) {
+      console.error("Error fetching symptom logs:", error);
+    }
+  };
 
   const fetchAppointments = async () => {
     setLoading(true);
@@ -79,6 +93,32 @@ export default function PatientDashboard() {
     if (daysDiff === 1) return "Tomorrow";
     if (daysDiff > 1) return `In ${daysDiff} days`;
     return `${Math.abs(daysDiff)} days ago`;
+  };
+
+  const getSeverityColor = (severity) => {
+    switch (severity?.toLowerCase()) {
+      case "mild":
+        return "bg-green-100 text-green-700";
+      case "moderate":
+        return "bg-yellow-100 text-yellow-700";
+      case "severe":
+        return "bg-red-100 text-red-700";
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
+  };
+
+  const getPriorityColor = (priority) => {
+    switch (priority?.toUpperCase()) {
+      case "LOW":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "MEDIUM":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "HIGH":
+        return "bg-red-100 text-red-800 border-red-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
+    }
   };
 
  const handleEmergency = () => {
@@ -186,7 +226,102 @@ export default function PatientDashboard() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* My Symptom Logs */}
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+                <span className="bg-pink-100 p-2 rounded-lg mr-3">📝</span>
+                My Symptoms
+              </h2>
+              <span className="bg-pink-100 text-pink-700 px-4 py-2 rounded-full text-sm font-bold">
+                {symptomLogs.length}
+              </span>
+            </div>
+
+            {symptomLogs.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                <div className="w-20 h-20 mx-auto mb-6 bg-pink-100 rounded-full flex items-center justify-center">
+                  <span className="text-3xl">📋</span>
+                </div>
+                <p className="text-xl font-bold text-gray-700 mb-2">
+                  No symptoms logged yet
+                </p>
+                <p className="text-sm">
+                  Start logging your symptoms to track your health.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4 max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-pink-300 scrollbar-track-pink-100">
+                {symptomLogs.map((log) => (
+                  <div
+                    key={log._id}
+                    className="border-2 border-pink-200 rounded-xl p-4 hover:shadow-lg transition-all duration-200 bg-pink-50"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🔴</span>
+                        <span className="font-bold text-gray-800 text-sm">
+                          Logged {formatDate(log.loggedAt)}
+                        </span>
+                      </div>
+                      {log.priority && (
+                        <span className={`px-2 py-1 text-xs font-bold rounded-full border ${getPriorityColor(log.priority)} uppercase`}>
+                          {log.priority}
+                        </span>
+                      )}
+                    </div>
+
+                    {log.generalCondition && (
+                      <div className="mb-3 p-2 bg-white rounded-lg border border-pink-200">
+                        <p className="text-xs font-semibold text-pink-700 uppercase mb-1">Condition:</p>
+                        <p className="text-sm text-gray-800">{log.generalCondition}</p>
+                      </div>
+                    )}
+
+                    {log.symptoms && log.symptoms.length > 0 && (
+                      <div className="mb-3">
+                        <p className="text-xs font-semibold text-pink-700 uppercase mb-2">Symptoms:</p>
+                        <div className="space-y-2">
+                          {log.symptoms.map((symptom, index) => (
+                            <div key={index} className="bg-white p-2 rounded-lg border border-pink-200">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="font-semibold text-gray-800 text-sm">{symptom.name}</span>
+                                <span className={`px-2 py-1 text-xs font-bold rounded-full ${getSeverityColor(symptom.severity)}`}>
+                                  {symptom.severity}
+                                </span>
+                              </div>
+                              {symptom.duration && (
+                                <p className="text-xs text-gray-600">Duration: {symptom.duration}</p>
+                              )}
+                              {symptom.description && (
+                                <p className="text-xs text-gray-700 mt-1 italic">"{symptom.description}"</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {log.recommendedActions && log.recommendedActions.length > 0 && (
+                      <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                        <p className="text-xs font-semibold text-green-700 uppercase mb-2">ASHA Recommendations:</p>
+                        <ul className="space-y-1">
+                          {log.recommendedActions.map((action, index) => (
+                            <li key={index} className="text-xs flex items-start">
+                              <span className="mr-1 text-green-500 font-bold">✓</span>
+                              <span className="text-gray-800">{action}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Upcoming Appointments */}
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <div className="flex items-center justify-between mb-6">
