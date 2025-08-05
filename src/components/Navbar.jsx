@@ -7,7 +7,7 @@ const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <nav className="bg-pink-50 shadow-md fixed top-0 left-0 w-full z-50">
+    <nav className="bg-pink-50 shadow-sm sticky top-0 w-full z-50">
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between align-middle h-16">
         <Link href="/" className="text-2xl font-bold text-pink-500">
           MaternalCare
