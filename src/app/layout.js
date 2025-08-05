@@ -13,8 +13,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const metadata = {
+  title: "MaternalCare",
+  description: "Maternal health tracking and support system",
+};
+
 export default function RootLayout({ children }) {
   return (
+    <html lang="en" className="light">
     <html lang="en">
       <head>
         <link rel="manifest" href="/manifest.json" />
@@ -23,6 +29,8 @@ export default function RootLayout({ children }) {
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        {children}
       >
         <SessionProvider>{children}</SessionProvider>
         {/* Service Worker Registration */}
