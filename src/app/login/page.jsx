@@ -39,8 +39,10 @@ export default function OTPLogin() {
       // Redirect based on user role
       if (session.user.role === 'asha') {
         router.push('/asha-dashboard');
+      } else if (session.user.role ==='pregnant') {
+        router.push('/patient-dashboard'); 
       } else {
-        // router.push('/'); // Default redirect for other roles
+        router.push('/');
       }
     }
   }, [session, router]);
