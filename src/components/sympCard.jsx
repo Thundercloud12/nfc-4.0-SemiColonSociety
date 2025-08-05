@@ -1,3 +1,5 @@
 export default function SympCard(){
-    return();
+    return(
+        <p>card</p>
+    );
 }
