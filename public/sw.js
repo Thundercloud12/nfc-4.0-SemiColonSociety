@@ -5,10 +5,6 @@ const STATIC_CACHE = 'static-v1';
 // URLs to cache for offline functionality
 const urlsToCache = [
   '/',
-  '/patient-dashboard',
-  '/patient-dashboard/symptom-logger',
-  '/asha-dashboard',
-  '/asha-dashboard/appointments',
   '/login',
   '/register',
   '/manifest.json'
@@ -21,7 +17,15 @@ self.addEventListener('install', (event) => {
     caches.open(STATIC_CACHE)
       .then((cache) => {
         console.log('[SW] Caching static resources');
-        return cache.addAll(urlsToCache);
+        // Cache files individually to avoid failing on missing files
+        return Promise.allSettled(
+          urlsToCache.map(url => 
+            cache.add(url).catch(err => {
+              console.warn(`[SW] Failed to cache ${url}:`, err);
+              return Promise.resolve(); // Continue with other files
+            })
+          )
+        );
       })
       .then(() => {
         console.log('[SW] Static resources cached successfully');
@@ -57,6 +61,11 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
+
+  // Skip auth requests to avoid interfering with NextAuth
+  if (url.pathname.startsWith('/api/auth/')) {
+    return;
+  }
 
   // Handle API requests differently
   if (url.pathname.startsWith('/api/')) {
@@ -115,8 +124,8 @@ async function handleStaticRequest(request) {
     // Try network first
     const response = await fetch(request);
     
-    // Cache successful responses
-    if (response.ok) {
+    // Cache successful responses (only for GET requests)
+    if (response.ok && request.method === 'GET') {
       const responseClone = response.clone();
       caches.open(CACHE_NAME).then((cache) => {
         cache.put(request, responseClone);
@@ -178,7 +187,14 @@ async function processOfflineQueue() {
     const transaction = db.transaction(['offline_queue'], 'readwrite');
     const store = transaction.objectStore('offline_queue');
     
-    const allRequests = await store.getAll();
+    // Get all requests - handle the case where store is empty
+    const getAllRequest = store.getAll();
+    const allRequests = await new Promise((resolve, reject) => {
+      getAllRequest.onsuccess = () => resolve(getAllRequest.result || []);
+      getAllRequest.onerror = () => reject(getAllRequest.error);
+    });
+    
+    console.log('[SW] Processing', allRequests.length, 'offline requests');
     
     for (const requestData of allRequests) {
       try {

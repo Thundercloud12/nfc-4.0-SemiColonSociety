@@ -1,7 +1,9 @@
 import twilio from "twilio";
 import mongoose from "mongoose";
 import { connectDb } from "@/lib/dbConnect";
-import User from "@/models/User"; 
+import User from "@/models/User";
+import Emergency from "@/models/Emergency"; 
+
 
 const accountSid = process.env.TWILIO_ACC_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -69,6 +71,23 @@ export async function POST(req) {
       to: toPhoneNumber,
     });
 
+
+    // Save emergency record to database
+    const emergencyRecord = new Emergency({
+      patient: userId,
+      patientName: user.name,
+      ashaWorker: ashaWorker._id,
+      ashaWorkerName: ashaWorker.name,
+      location: {
+        latitude: lat,
+        longitude: lng,
+      },
+      address: fullAddress,
+      status: 'sent',
+    });
+
+    await emergencyRecord.save();
+
     return new Response(
       JSON.stringify({ success: true }),
       { status: 200, headers: { "Content-Type": "application/json" } }
@@ -80,4 +99,6 @@ export async function POST(req) {
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
+
 }
+
