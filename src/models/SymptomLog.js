@@ -7,17 +7,30 @@ const symptomLogSchema = new Schema(
             ref: 'User',
             required: true,
         },
-        recordedAt: {
+        loggedAt: {
             type: Date,
             default: Date.now,
         },
         symptoms: [{
-            symptom: String,         
-            severity: String,        
-            notes: String,           
+            name: String,
+            severity: String,
+            duration: String,
+            description: String,
         }],
-          
-        transcriptionText: String,   
+        generalCondition: String,
+        additionalNotes: String,
+        recommendedActions: [String],
+        priority: {
+            type: String,
+            enum: ['LOW', 'MEDIUM', 'HIGH'],
+            default: 'MEDIUM',
+        },
+        // Legacy fields (keeping for backward compatibility)
+        recordedAt: {
+            type: Date,
+            default: Date.now,
+        },
+        transcriptionText: String,
         riskLevel: {
             type: String,
             enum: ['low', 'medium', 'high'],
@@ -25,16 +38,16 @@ const symptomLogSchema = new Schema(
         },
         sentToAsha: {
             type: Boolean,
-            default: false,         
+            default: false,
         },
         syncStatus: {
             type: String,
             enum: ['pending', 'synced'],
-            default: 'pending',     
+            default: 'pending',
         },
         ashaWorker: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',            
+            ref: 'User',
         },
     },
     { timestamps: true }
