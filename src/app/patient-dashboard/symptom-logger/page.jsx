@@ -24,6 +24,9 @@ export default function SymptomLogger() {
   const [ttsSupported, setTtsSupported] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(false);
   
+  // Language selection state
+  const [selectedLanguage, setSelectedLanguage] = useState('en');
+  
   // Audio refs
   const recognitionRef = useRef(null);
   const synthRef = useRef(null);
@@ -81,7 +84,7 @@ export default function SymptomLogger() {
       // Configure recognition settings
       recognitionRef.current.continuous = true; // Keep listening
       recognitionRef.current.interimResults = true; // Show interim results
-      recognitionRef.current.lang = 'en-US';
+      recognitionRef.current.lang = selectedLanguage === 'hi' ? 'hi-IN' : 'en-US';
       recognitionRef.current.maxAlternatives = 1;
 
       recognitionRef.current.onstart = () => {
@@ -201,16 +204,30 @@ export default function SymptomLogger() {
     scrollToBottom();
   }, [messages]);
 
+  // Language change effect
+  useEffect(() => {
+    if (speechSupported && recognitionRef.current) {
+      recognitionRef.current.lang = selectedLanguage === 'hi' ? 'hi-IN' : 'en-US';
+    }
+  }, [selectedLanguage, speechSupported]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const initializeConversation = () => {
-    const welcomeMessage = {
-      type: "bot",
-      content: `Hello! I'm here to help you log your symptoms today. Please tell me how you're feeling. You can describe any symptoms, discomfort, or concerns you might have. When you're done, just say 'stop' or 'that's all' to finish.${
+    const welcomeMessages = {
+      en: `Hello! I'm here to help you log your symptoms today. Please tell me how you're feeling. You can describe any symptoms, discomfort, or concerns you might have. When you're done, just say 'stop' or 'that's all' to finish.${
         !navigator.onLine ? '\n\n📴 You are currently offline. Your symptoms will be saved locally and synced when your connection is restored.' : ''
       }`,
+      hi: `नमस्ते! मैं आज आपके लक्षणों को लॉग करने में आपकी मदद करने के लिए यहाँ हूँ। कृपया बताएं कि आप कैसा महसूस कर रहे हैं। आप किसी भी लक्षण, परेशानी या चिंता का वर्णन कर सकते हैं। जब आप पूरा कर लें, तो 'रुकें' या 'बस इतना ही' कहें।${
+        !navigator.onLine ? '\n\n📴 आप वर्तमान में ऑफ़लाइन हैं। आपके लक्षण स्थानीय रूप से सहेजे जाएंगे और कनेक्शन बहाल होने पर सिंक हो जाएंगे।' : ''
+      }`
+    };
+
+    const welcomeMessage = {
+      type: "bot",
+      content: welcomeMessages[selectedLanguage] || welcomeMessages.en,
       timestamp: new Date()
     };
     setMessages([welcomeMessage]);
@@ -232,9 +249,13 @@ export default function SymptomLogger() {
 
     try {
       // Check if user wants to end the session
-      const stopWords = ["stop", "that's all", "done", "finish", "end", "complete"];
-      const shouldStop = stopWords.some(word => 
-        currentMessage.toLowerCase().includes(word)
+      const stopWords = {
+        en: ["stop", "that's all", "done", "finish", "end", "complete"],
+        hi: ["रुकें", "बस इतना ही", "समाप्त", "खत्म", "बंद", "पूरा"]
+      };
+      const currentStopWords = stopWords[selectedLanguage] || stopWords.en;
+      const shouldStop = currentStopWords.some(word => 
+        currentMessage.toLowerCase().includes(word.toLowerCase())
       );
 
       const response = await fetch("/api/patient/symptom-chat", {
@@ -245,7 +266,8 @@ export default function SymptomLogger() {
         body: JSON.stringify({
           message: currentMessage,
           conversationHistory: messages,
-          shouldEndSession: shouldStop
+          shouldEndSession: shouldStop,
+          language: selectedLanguage
         }),
       });
 
@@ -278,9 +300,14 @@ export default function SymptomLogger() {
           setSessionEnded(true);
           await saveSymptomLog(data.structuredData);
           
+          const summaryMessages = {
+            en: "Your symptoms have been logged successfully. You can start a new session or return to your dashboard.",
+            hi: "आपके लक्षण सफलतापूर्वक लॉग हो गए हैं। आप एक नया सत्र शुरू कर सकते हैं या अपने डैशबोर्ड पर वापस जा सकते हैं।"
+          };
+          
           const summaryMessage = {
             type: "system",
-            content: "Your symptoms have been logged successfully. You can start a new session or return to your dashboard.",
+            content: summaryMessages[selectedLanguage] || summaryMessages.en,
             timestamp: new Date()
           };
           
@@ -288,9 +315,13 @@ export default function SymptomLogger() {
         }
       } else {
         setIsTyping(false);
+        const errorMessages = {
+          en: "Sorry, I'm having trouble processing your message. Please try again.",
+          hi: "क्षमा करें, मुझे आपके संदेश को प्रोसेस करने में समस्या हो रही है। कृपया फिर से कोशिश करें।"
+        };
         const errorMessage = {
           type: "system",
-          content: "Sorry, I'm having trouble processing your message. Please try again.",
+          content: errorMessages[selectedLanguage] || errorMessages.en,
           timestamp: new Date()
         };
         setMessages(prev => [...prev, errorMessage]);
@@ -298,9 +329,13 @@ export default function SymptomLogger() {
     } catch (error) {
       setIsTyping(false);
       console.error("Error sending message:", error);
+      const errorMessages = {
+        en: "Sorry, I'm having trouble connecting. Please try again.",
+        hi: "क्षमा करें, मुझे कनेक्ट करने में समस्या हो रही है। कृपया फिर से कोशिश करें।"
+      };
       const errorMessage = {
         type: "system",
-        content: "Sorry, I'm having trouble connecting. Please try again.",
+        content: errorMessages[selectedLanguage] || errorMessages.en,
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -498,7 +533,7 @@ export default function SymptomLogger() {
       utterance.rate = 0.8;
       utterance.pitch = 1;
       utterance.volume = 0.8;
-      utterance.lang = 'en-US';
+      utterance.lang = selectedLanguage === 'hi' ? 'hi-IN' : 'en-US';
       
       utterance.onstart = () => {
         console.log('TTS started');
@@ -546,6 +581,26 @@ export default function SymptomLogger() {
     }
   };
 
+  const handleLanguageChange = (newLanguage) => {
+    setSelectedLanguage(newLanguage);
+    
+    // Stop any ongoing audio
+    if (isListening) stopListening();
+    if (isSpeaking) stopSpeaking();
+    
+    // Reinitialize audio with new language
+    if (recognitionRef.current) {
+      recognitionRef.current.lang = newLanguage === 'hi' ? 'hi-IN' : 'en-US';
+    }
+    
+    // Restart conversation with new language
+    setMessages([]);
+    setSessionEnded(false);
+    setTimeout(() => {
+      initializeConversation();
+    }, 100);
+  };
+
   const formatTime = (timestamp) => {
     return new Date(timestamp).toLocaleTimeString("en-IN", {
       hour: "2-digit",
@@ -590,12 +645,43 @@ export default function SymptomLogger() {
                 </p>
               </div>
             </div>
-            <button
-              onClick={() => router.push("/patient-dashboard")}
-              className="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl hover:from-gray-600 hover:to-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-            >
-              ← Back to Dashboard
-            </button>
+            
+            {/* Language Selection and Back Button */}
+            <div className="flex items-center space-x-4">
+              {/* Language Selection */}
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium text-gray-700">Language:</span>
+                <div className="flex bg-gray-100 rounded-lg p-1">
+                  <button
+                    onClick={() => handleLanguageChange('en')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                      selectedLanguage === 'en'
+                        ? 'bg-blue-500 text-white shadow-md'
+                        : 'text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    🇺🇸 English
+                  </button>
+                  <button
+                    onClick={() => handleLanguageChange('hi')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                      selectedLanguage === 'hi'
+                        ? 'bg-blue-500 text-white shadow-md'
+                        : 'text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    🇮🇳 हिंदी
+                  </button>
+                </div>
+              </div>
+              
+              <button
+                onClick={() => router.push("/patient-dashboard")}
+                className="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl hover:from-gray-600 hover:to-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                ← Back to Dashboard
+              </button>
+            </div>
           </div>
         </div>
 
@@ -685,7 +771,7 @@ export default function SymptomLogger() {
                   onClick={startNewSession}
                   className="px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
-                  🔄 Start New Session
+                  {selectedLanguage === 'hi' ? '🔄 नया सत्र शुरू करें' : '🔄 Start New Session'}
                 </button>
               </div>
             ) : (
@@ -752,7 +838,11 @@ export default function SymptomLogger() {
                     value={currentMessage}
                     onChange={(e) => setCurrentMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    placeholder={`${speechSupported ? 'Type your message or use voice input...' : 'Describe your symptoms in detail...'} (Press Enter to send, Shift+Enter for new line)`}
+                    placeholder={
+                      selectedLanguage === 'hi' 
+                        ? `${speechSupported ? 'अपना संदेश टाइप करें या आवाज़ का उपयोग करें...' : 'अपने लक्षणों का विस्तार से वर्णन करें...'} (भेजने के लिए Enter दबाएं, नई लाइन के लिए Shift+Enter)`
+                        : `${speechSupported ? 'Type your message or use voice input...' : 'Describe your symptoms in detail...'} (Press Enter to send, Shift+Enter for new line)`
+                    }
                     className="flex-1 px-4 py-3 border-2 border-pink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 resize-none transition-all duration-200 text-gray-700"
                     rows="3"
                     disabled={isLoading}
