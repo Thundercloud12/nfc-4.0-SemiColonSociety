@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import { Spotlight } from "./ui/Spotlight";
-import Button from "./ui/Button";
 import { useRouter } from "next/navigation";
 
 const Hero = () => {
@@ -25,7 +24,9 @@ const Hero = () => {
         </h1>
         <p className="mt-4 text-lg md:text-xl max-w-3xl text-gray-800">Your trusted platform for maternal health — track your wellness, book appointments, and connect with healthcare professionals, all in one place</p>
 
-        <Button text="Get Started" click={handleClick} className="mt-6" />
+        <button onClick={handleClick} className={`mt-6 px-6 py-3 rounded-full bg-pink-500 text-white hover:bg-pink-600 transition`}>
+          Get Started
+        </button>
       </div>
     </div>
   );

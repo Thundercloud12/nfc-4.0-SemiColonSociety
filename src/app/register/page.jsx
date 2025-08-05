@@ -238,12 +238,9 @@ export default function RegisterForm() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-50 py-12 px-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl p-8 border-t-4 border-pink-500">
+      <div className="max-w-2xl mx-auto bg-pink-50">
+        <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
-            <div className="bg-pink-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl">👤</span>
-            </div>
             <h2 className="text-4xl font-bold text-gray-800 mb-2">Create Account</h2>
             <p className="text-gray-600 text-lg">Join MaternalCare for better health management</p>
           </div>
@@ -252,7 +249,7 @@ export default function RegisterForm() {
             {/* Basic Information Section */}
             <div className="bg-pink-50 p-6 rounded-xl">
               <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                <span className="bg-pink-100 p-2 rounded-lg mr-3">📋</span>
+             
                 Basic Information
               </h3>
               
@@ -268,7 +265,7 @@ export default function RegisterForm() {
                     onChange={handleInputChange}
                     required
                     placeholder="Enter your full name"
-                    className="w-full px-4 py-3 border-2 border-pink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200"
+                    className="w-full px-4 py-3 border-2 border-pink-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200"
                   />
                 </div>
                 
@@ -283,7 +280,7 @@ export default function RegisterForm() {
                     onChange={handleInputChange}
                     required
                     placeholder="Enter phone number"
-                    className="w-full px-4 py-3 border-2 border-pink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200"
+                    className="w-full px-4 py-3 border-2 border-pink-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200"
                   />
                 </div>
                 
@@ -297,7 +294,7 @@ export default function RegisterForm() {
                     value={formData.email}
                     onChange={handleInputChange}
                     placeholder="Enter email address"
-                    className="w-full px-4 py-3 border-2 border-pink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200"
+                    className="w-full px-4 py-3 border-2 border-pink-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200"
                   />
                 </div>
                 
@@ -312,7 +309,7 @@ export default function RegisterForm() {
                     onChange={handleInputChange}
                     required
                     placeholder="Enter password"
-                    className="w-full px-4 py-3 border-2 border-pink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200"
+                    className="w-full px-4 py-3 border-2 border-pink-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200"
                   />
                 </div>
               </div>
@@ -321,7 +318,7 @@ export default function RegisterForm() {
             {/* Role Selection */}
             <div className="bg-pink-50 p-6 rounded-xl">
               <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                <span className="bg-pink-100 p-2 rounded-lg mr-3">👥</span>
+                
                 Select Your Role
               </h3>
               
@@ -342,7 +339,7 @@ export default function RegisterForm() {
                         : 'border-pink-200 bg-white hover:border-pink-300'
                     }`}>
                       <div className="text-2xl mb-2">
-                        {role === 'pregnant' ? '🤱' : role === 'family' ? '👨‍👩‍👧‍👦' : '👩‍⚕️'}
+                   
                       </div>
                       <div className="font-semibold text-gray-800 capitalize">{role}</div>
                       <div className="text-xs text-gray-600 mt-1">
@@ -359,7 +356,7 @@ export default function RegisterForm() {
             {/* Language Preference */}
             <div className="bg-pink-50 p-6 rounded-xl">
               <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                <span className="bg-pink-100 p-2 rounded-lg mr-3">🌐</span>
+        
                 Language Preference
               </h3>
               
@@ -367,11 +364,10 @@ export default function RegisterForm() {
                 name="languagePreference"
                 value={formData.languagePreference}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 border-2 border-pink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200"
+                className="w-full px-4 py-3 border-2 border-pink-200 bg-pink-50 rounded-lg focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200"
               >
                 <option value="hi">🇮🇳 Hindi</option>
                 <option value="mr">🇮🇳 Marathi</option>
-                <option value="gu">🇮🇳 Gujarati</option>
                 <option value="en">🇺🇸 English</option>
               </select>
             </div>
@@ -380,7 +376,7 @@ export default function RegisterForm() {
             {formData.role === 'pregnant' && (
               <div className="bg-rose-50 p-6 rounded-xl border-2 border-rose-200">
                 <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                  <span className="bg-rose-100 p-2 rounded-lg mr-3">🤱</span>
+                 
                   Pregnancy Information
                 </h3>
                 
@@ -457,7 +453,6 @@ export default function RegisterForm() {
             {formData.role === 'family' && (
               <div className="bg-blue-50 p-6 rounded-xl border-2 border-blue-200">
                 <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                  <span className="bg-blue-100 p-2 rounded-lg mr-3">🔗</span>
                   Family Connection
                 </h3>
                 
@@ -482,9 +477,9 @@ export default function RegisterForm() {
             )}
 
             {/* Location Section */}
-            <div className="bg-green-50 p-6 rounded-xl border-2 border-green-200">
+            <div className="bg-pink-50 p-6 rounded-xl border-2 border-pink-200">
               <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                <span className="bg-green-100 p-2 rounded-lg mr-3">📍</span>
+                
                 Location (Optional but Recommended)
               </h3>
               
@@ -494,7 +489,7 @@ export default function RegisterForm() {
                     type="button"
                     onClick={getCurrentLocation}
                     disabled={locationLoading}
-                    className="w-full px-6 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    className="w-full px-6 py-4 bg-pink-50 text-pink-500 rounded-lg hover:border-1 hover:border-pink-400 focus:outline-none focus:ring- focus:ring-pink-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                   >
                     {locationLoading ? (
                       <span className="flex items-center justify-center">
@@ -505,21 +500,21 @@ export default function RegisterForm() {
                         Getting Location...
                       </span>
                     ) : (
-                      "📍 Get Current Location"
+                      " Get Current Location"
                     )}
                   </button>
                   
                   {locationError && (
-                    <div className="mt-4 p-4 bg-red-50 border-2 border-red-200 text-red-700 rounded-lg text-sm">
+                    <div className="mt-4 p-4 bg-red-50 border-2 border-red-200 text-red-700 rounded-lg text-sm text-center">
                       <div className="flex items-center">
-                        <span className="mr-2">❌</span>
+                       
                         {locationError}
                       </div>
                     </div>
                   )}
                   
                   <p className="text-xs text-gray-600 mt-4 text-center">
-                    📱 Location helps ASHA workers provide better local healthcare services
+                    Location helps ASHA workers provide better local healthcare services
                   </p>
                 </div>
               ) : (
@@ -532,11 +527,11 @@ export default function RegisterForm() {
                           Location Captured Successfully
                         </p>
                         <p className="text-sm text-green-700 mb-2">
-                          📍 {formData.location.address || `${formData.location.coordinates.latitude}, ${formData.location.coordinates.longitude}`}
+                           {formData.location.address || `${formData.location.coordinates.latitude}, ${formData.location.coordinates.longitude}`}
                         </p>
                         {formData.location.city && (
                           <p className="text-xs text-green-600">
-                            🏙️ {formData.location.city}, {formData.location.state}
+                             {formData.location.city}, {formData.location.state}
                           </p>
                         )}
                       </div>
@@ -548,7 +543,7 @@ export default function RegisterForm() {
                         }}
                         className="text-green-600 hover:text-green-800 text-sm font-semibold px-3 py-1 rounded hover:bg-green-200 transition-all duration-200"
                       >
-                        🗑️ Clear
+                         Clear
                       </button>
                     </div>
                   </div>
@@ -557,7 +552,7 @@ export default function RegisterForm() {
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
                         <p className="text-sm text-gray-700 font-semibold">
-                          🗺️ Click on the map to adjust your location
+                           Click on the map to adjust your location
                         </p>
                         <button
                           type="button"
@@ -584,7 +579,7 @@ export default function RegisterForm() {
                       onClick={() => setShowMap(true)}
                       className="w-full px-4 py-3 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200 font-semibold"
                     >
-                      🗺️ Show Map to Adjust Location
+                       Show Map to Adjust Location
                     </button>
                   )}
                 </div>
@@ -607,7 +602,7 @@ export default function RegisterForm() {
                     Creating Account...
                   </span>
                 ) : (
-                  "🚀 Create Account"
+                  " Create Account"
                 )}
               </button>
             </div>
@@ -615,15 +610,9 @@ export default function RegisterForm() {
 
           {/* Success/Error Messages */}
           {message && (
-            <div className={`mt-6 p-4 rounded-xl border-l-4 ${
-              message.includes("Success") || message.includes("successfully")
-                ? "bg-green-50 text-green-800 border-green-400"
-                : "bg-red-50 text-red-800 border-red-400"
-            } shadow-sm`}>
+            <div className={`mt-6 p-4 rounded-xl border-l-4  shadow-sm`}>
               <div className="flex items-start">
-                <span className="mr-3 text-lg">
-                  {message.includes("Success") || message.includes("successfully") ? "✅" : "❌"}
-                </span>
+              
                 <div className="flex-1">
                   <div className="whitespace-pre-line">{message}</div>
                 </div>

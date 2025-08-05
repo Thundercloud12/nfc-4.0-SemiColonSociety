@@ -17,7 +17,7 @@ export default function SectionNav({name,text,click}){
 <p>{name}</p>
   </div>
   <div className="flex-end pr-3 flex gap-x-4">
-    <button onClick={handleAdd} className="bg-pink-50 p-2.5 pl-3 pr-3 text-md text-pink-600 rounded-md">{text}</button>
+    <button onClick={handleAdd} className="bg-pink-50 p-2.5 pl-3 pr-3 text-md text-pink-600 rounded-md  hover:bg-pink-400 hover:text-white">{text}</button>
   </div>
 </div>
     );
