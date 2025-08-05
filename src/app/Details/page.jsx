@@ -8,24 +8,15 @@ import {
   IconBrandGoogle,
   IconBrandOnlyfans,
 } from "@tabler/icons-react";
+import { useSearchParams } from "next/navigation";
 
-import { Router, useRouter } from "next/navigation";
 
-
-export default function Login() {
-const[role,setRole]=useState("Patient");
-const[relation,setRelation]=useState("");
-const router= useRouter();
+export default function Details() {
+ const searchParams = useSearchParams();
+  const role = searchParams.get("role");
+  const[relation,setRelation]=useState("");
   const handleSubmit = (e) => {
     e.preventDefault();
-    
-    if(role==="Patient"||role==="Relative"){
-        router.push("/UserDash");
-    }
-    else if(role === "AshaWorker") {
-    router.push("/AshaDash");
-}
-   
     console.log("Form submitted");
   };
   return (
@@ -38,43 +29,53 @@ const router= useRouter();
       <p className="mt-2 max-w-sm text-sm text-neutral-600 dark:text-neutral-300">
         Fill in the details
       </p>
-      
+      <p className="text-lg font-bold text-neutral-800 dark:text-neutral-200">
+        {role}
+      </p>
       <form className="my-8" onSubmit={handleSubmit}>
-            <LabelInputContainer className="mb-4">
-                      <Label htmlFor="logInRole">Role</Label>
-                      <select id="logInRole" value={role} onChange={(e)=>setRole(e.target.value)}  className="bg-pink-100 text-black rounded-xl border-1 border-pink-300 p-3">
-                       < option  value="Patient" >Patient</option>
-                       <option value="Relative" >Relative </option>
-                       <option value="AshaWorker" >AshaWorker </option>
-                      </select>
-                    </LabelInputContainer>  
+         
         
-        {(role === "Patient" || role==="AshaWorker")&& (
+        {role === "Patient" && (
   <>
     <LabelInputContainer className="mb-4">
-      <Label htmlFor="Name">Name</Label>
-      <Input id="Name" placeholder="seema" type="text"  className="dark:bg-pink-100"/>
+      <Label htmlFor="pregnancyMonth">Ongoing Pregnancy Month</Label>
+      <Input id="pregnancyMonth" placeholder="2" type="number"  className="dark:bg-pink-100"/>
     </LabelInputContainer>
 
-
-  <LabelInputContainer className="mb-4">
-      <Label htmlFor="Password">Password</Label>
-      <Input id="Password" placeholder="Enter password" type="password"  className="dark:bg-pink-100"/>
+    <LabelInputContainer className="mb-4">
+      <Label htmlFor="expectedDeliveryDate">Expected Delivery Date</Label>
+      <Input
+        id="expectedDeliveryDate"
+        placeholder="02/08/2025"
+        type="date"
+        className="dark:bg-pink-100 dark:text-black"
+      />
     </LabelInputContainer>
-      
+   
+   <LabelInputContainer className="mb-4">
+             <Label htmlFor="medication">Medications</Label>
+             <select id="medication"  onChange={(e)=>setRole(e.target.value)}  className="bg-pink-100 text-black rounded-xl border-1 border-pink-300 p-3">
+              < option  value="Folic Acid" >Folic Acid</option>
+              <option value="Ferrous Sulfate " >Ferrous Sulfate </option>
+              <option value="Calcium Carbonate + Vitamin D3 " >Calcium Carbonate + Vitamin D3 </option>
+              <option value="B-complex + Zinc " >B-complex + Zinc </option>
+              <option value="Levothyroxine" >Levothyroxine </option>
+             </select>
+           </LabelInputContainer>  
+           
   </>
   )}
 
    {role === "Relative" && (    
   <>
     <LabelInputContainer className="mb-4">
-      <Label htmlFor="relativeName"> Patient Name</Label>
-      <Input id="relativeName" placeholder="seema" type="text" className="dark:bg-pink-100" />
+      <Label htmlFor="relativeName"> Name</Label>
+      <Input id="relativeName" placeholder="soham" type="text" className="dark:bg-pink-100" />
     </LabelInputContainer>
 
     <LabelInputContainer className="mb-4">
       <Label htmlFor="relation">Relation</Label>
-     <select id="relation" value={relation} onChange={(e)=>setRelation(e.target.value)}  className="bg-pink-100 text-black rounded-xl border-1 border-pink-300 p-3 dark:bg-pink-100">
+     <select id="relation" value={relation} onChange={(e)=>setRelation(e.target.value)}   className="bg-pink-100 text-black rounded-xl border-1 border-pink-300 p-3 dark:bg-pink-100">
            <option value="Husband"  >Husband</option>
            < option  value="father" >Father</option>
            < option  value="fatherInLaw" >Father in Law</option>
@@ -90,18 +91,25 @@ const router= useRouter();
       <Input id="uniCode" placeholder="Enter code" type="text" className="dark:bg-pink-100" />
     </LabelInputContainer>
 
+
+           
+   
   </>
   )}
       
-<button  
+<button
           className="group/btn relative block h-10 w-full rounded-xl bg-[#FD5DA8] font-medium text-white shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:bg-pink-300"
           type="submit"
         >
-          Log In &rarr;
+          Sign up &rarr;
           <BottomGradient />
         </button>
+        
+
         <div
           className="my-8 h-[1px] w-full bg-gradient-to-r from-transparent via-neutral-300 to-transparent dark:via-neutral-700" />
+
+       
       </form>
     </div>
     </div>
