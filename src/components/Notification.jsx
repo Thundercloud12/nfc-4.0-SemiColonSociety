@@ -1,6 +1,8 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState } from "react";
+
+const NotificationContext = createContext(undefined);
 
 export function NotificationProvider({ children }) {
   const [notification, setNotification] = useState(null);
@@ -36,7 +38,6 @@ function getAlertClass(type) {
     case "warning":
       return "alert-warning";
     case "info":
-      return "alert-info";
     default:
       return "alert-info";
   }

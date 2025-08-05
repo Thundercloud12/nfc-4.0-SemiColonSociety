@@ -1,0 +1,35 @@
+# Python dependencies for the Maternal Health AI Assistant
+# Install using: uv pip install -r requirements.txt
+
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+pydantic==2.5.0
+
+# Database and storage
+motor==3.3.2  # Async MongoDB driver
+pymongo==4.6.0
+
+# Authentication and security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-decouple==3.8
+
+# Optional TTS/STT integrations (uncomment as needed)
+# google-cloud-texttospeech==2.16.3
+# google-cloud-speech==2.21.0
+# azure-cognitiveservices-speech==1.34.0
+# openai==1.3.0
+
+# ML and AI (for enhanced analysis)
+# scikit-learn==1.3.2
+# numpy==1.24.3
+# pandas==2.0.3
+
+# Communication and alerts
+# twilio==8.10.0  # For SMS
+# requests==2.31.0  # For HTTP notifications
+
+# Utility libraries
+python-dateutil==2.8.2
+aiofiles==23.2.1
