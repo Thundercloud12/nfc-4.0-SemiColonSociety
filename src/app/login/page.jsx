@@ -161,14 +161,14 @@ export default function OTPLogin() {
             </form>
           ) : (
             <form onSubmit={verifyOtp} className="space-y-6">
-              <div className="bg-green-50 p-6 rounded-xl border-2 border-green-200">
+              <div className="bg-pink-50 p-6 rounded-xl border-2 border-pink-200">
                 <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
                   
                   Verify OTP
                 </h3>
                 
                 <div className="mb-4">
-                  <div className="flex items-center p-3 bg-green-100 rounded-lg text-sm text-green-800">
+                  <div className="flex items-center p-3 bg-pink-100 rounded-lg text-sm text-pink-800">
                     
                     OTP sent to: <span className="font-semibold ml-1">{identifier}</span>
                   </div>
@@ -184,7 +184,7 @@ export default function OTPLogin() {
                     onChange={(e) => setOtp(e.target.value)}
                     required
                     maxLength="6"
-                    className="w-full px-4 py-3 border-2 border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-center font-mono text-lg tracking-widest"
+                    className="w-full px-4 py-3 border-2 border-pink-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200 text-center font-mono text-lg tracking-widest"
                     placeholder="000000"
                   />
                 </div>
@@ -194,7 +194,7 @@ export default function OTPLogin() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full px-6 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-bold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  className="w-full px-6 py-4 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-xl hover:from-pink-600 hover:to-pink-700 focus:outline-none focus:ring-1 focus:ring-pink-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-bold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
                   {loading ? (
                     <span className="flex items-center justify-center">
