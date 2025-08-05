@@ -185,11 +185,21 @@ class OfflineManager {
       
       const symptomsTransaction = this.db.transaction(['offline_symptoms'], 'readonly');
       const symptomsStore = symptomsTransaction.objectStore('offline_symptoms');
-      const symptomsCount = await symptomsStore.count();
+      
+      const symptomsCountRequest = symptomsStore.count();
+      const symptomsCount = await new Promise((resolve, reject) => {
+        symptomsCountRequest.onsuccess = () => resolve(symptomsCountRequest.result);
+        symptomsCountRequest.onerror = () => reject(symptomsCountRequest.error);
+      });
       
       const appointmentsTransaction = this.db.transaction(['offline_appointments'], 'readonly');
       const appointmentsStore = appointmentsTransaction.objectStore('offline_appointments');
-      const appointmentsCount = await appointmentsStore.count();
+      
+      const appointmentsCountRequest = appointmentsStore.count();
+      const appointmentsCount = await new Promise((resolve, reject) => {
+        appointmentsCountRequest.onsuccess = () => resolve(appointmentsCountRequest.result);
+        appointmentsCountRequest.onerror = () => reject(appointmentsCountRequest.error);
+      });
       
       return {
         symptoms: symptomsCount,
@@ -226,7 +236,15 @@ class OfflineManager {
     try {
       const transaction = this.db.transaction(['offline_symptoms'], 'readwrite');
       const store = transaction.objectStore('offline_symptoms');
-      const allSymptoms = await store.getAll();
+      
+      // Get all symptoms with proper error handling
+      const getAllRequest = store.getAll();
+      const allSymptoms = await new Promise((resolve, reject) => {
+        getAllRequest.onsuccess = () => resolve(getAllRequest.result || []);
+        getAllRequest.onerror = () => reject(getAllRequest.error);
+      });
+      
+      console.log('[OfflineManager] Syncing', allSymptoms.length, 'symptom logs');
       
       for (const symptomRecord of allSymptoms) {
         try {
@@ -263,7 +281,15 @@ class OfflineManager {
     try {
       const transaction = this.db.transaction(['offline_appointments'], 'readwrite');
       const store = transaction.objectStore('offline_appointments');
-      const allAppointments = await store.getAll();
+      
+      // Get all appointments with proper error handling
+      const getAllRequest = store.getAll();
+      const allAppointments = await new Promise((resolve, reject) => {
+        getAllRequest.onsuccess = () => resolve(getAllRequest.result || []);
+        getAllRequest.onerror = () => reject(getAllRequest.error);
+      });
+      
+      console.log('[OfflineManager] Syncing', allAppointments.length, 'appointments');
       
       for (const appointmentRecord of allAppointments) {
         try {

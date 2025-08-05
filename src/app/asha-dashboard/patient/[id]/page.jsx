@@ -13,6 +13,8 @@ export default function PatientDetails() {
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [editingActions, setEditingActions] = useState({});
+  const [newAction, setNewAction] = useState({});
 
   useEffect(() => {
     console.log("[PatientDetails] useEffect triggered with:", {
@@ -159,6 +161,44 @@ export default function PatientDetails() {
     
     console.log("[PatientDetails] Priority color class:", colorClass);
     return colorClass;
+  };
+
+  const handleAddAction = async (logId) => {
+    const action = newAction[logId]?.trim();
+    if (!action) return;
+
+    try {
+      const response = await fetch(`/api/asha/symptom-log/${logId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          recommendedActions: [
+            ...(patient.symptomLogs.find(log => log._id === logId)?.recommendedActions || []),
+            action
+          ]
+        }),
+      });
+
+      if (response.ok) {
+        // Refresh patient data to show updated actions
+        await fetchPatientDetails();
+        setNewAction(prev => ({ ...prev, [logId]: '' }));
+        setEditingActions(prev => ({ ...prev, [logId]: false }));
+      } else {
+        console.error('Failed to add recommended action');
+        setError('Failed to add recommended action');
+      }
+    } catch (error) {
+      console.error('Error adding recommended action:', error);
+      setError('Error adding recommended action');
+    }
+  };
+
+  const toggleEditingActions = (logId) => {
+    setEditingActions(prev => ({ ...prev, [logId]: !prev[logId] }));
+    setNewAction(prev => ({ ...prev, [logId]: '' }));
   };
 
   if (status === "loading" || loading) {
@@ -448,9 +488,9 @@ export default function PatientDetails() {
                       )}
                       
                       {log.recommendedActions && log.recommendedActions.length > 0 && (
-                        <div className="p-4 bg-green-50 rounded-lg border-l-4 border-green-400">
+                        <div className="mb-4 p-4 bg-green-50 rounded-lg border-l-4 border-green-400">
                           <label className="text-sm font-bold text-green-700 uppercase tracking-wide mb-3 block">Recommended Actions:</label>
-                          <ul className="text-gray-800 space-y-2">
+                          <ul className="text-gray-800 space-y-2 mb-3">
                             {log.recommendedActions.map((action, index) => (
                               <li key={index} className="text-sm flex items-start">
                                 <span className="mr-2 text-green-500 font-bold">✓</span>
@@ -460,6 +500,50 @@ export default function PatientDetails() {
                           </ul>
                         </div>
                       )}
+
+                      {/* Add Recommended Actions Section */}
+                      <div className="mt-4 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+                        <div className="flex items-center justify-between mb-3">
+                          <label className="text-sm font-bold text-blue-700 uppercase tracking-wide">Add Recommended Action:</label>
+                          <button
+                            onClick={() => toggleEditingActions(log._id)}
+                            className={`px-3 py-1 text-xs font-bold rounded-full transition-all duration-200 ${
+                              editingActions[log._id] 
+                                ? 'bg-red-500 text-white hover:bg-red-600' 
+                                : 'bg-blue-500 text-white hover:bg-blue-600'
+                            }`}
+                          >
+                            {editingActions[log._id] ? 'Cancel' : '+ Add Action'}
+                          </button>
+                        </div>
+                        
+                        {editingActions[log._id] && (
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={newAction[log._id] || ''}
+                              onChange={(e) => setNewAction(prev => ({ ...prev, [log._id]: e.target.value }))}
+                              placeholder="Enter recommended action..."
+                              className="flex-1 px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                  handleAddAction(log._id);
+                                }
+                              }}
+                            />
+                            <button
+                              onClick={() => handleAddAction(log._id)}
+                              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-200 font-semibold"
+                            >
+                              Save
+                            </button>
+                          </div>
+                        )}
+                        
+                        {!editingActions[log._id] && (!log.recommendedActions || log.recommendedActions.length === 0) && (
+                          <p className="text-sm text-gray-600 italic">No recommended actions added yet. Click "Add Action" to provide guidance.</p>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
