@@ -12,6 +12,7 @@ import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import PatientDash from "@/components/patientDash";
 import SymptomLogger from "./symptomLogger";
+import SymptomLogs from "./SymptomLogs";
 export default function SidebarDemo() {
    const [selectedPage, setSelectedPage] = useState("PatientDash");
   const links = [
@@ -31,6 +32,13 @@ export default function SidebarDemo() {
       ),
     },
     {
+      label: "Symptom Logs",
+      value: "SymptomLogs",
+      icon: (
+        <IconUserBolt className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+      ),
+    },
+    {
       label: "Logout",
       value: "#",
       icon: (
@@ -45,6 +53,8 @@ export default function SidebarDemo() {
         return <PatientDash/>;
       case "SymptomLogger":
         return <SymptomLogger/>;
+      case "SymptomLogs":
+        return <SymptomLogs/>
       case "Logout":
         return <div className="p-8">You have been logged out.</div>;
       default:

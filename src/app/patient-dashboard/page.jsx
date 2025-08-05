@@ -181,20 +181,18 @@ export default function PatientDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-50 p-6">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-screen w-full mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 border-t-4 border-pink-500">
+        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 ">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <div className="bg-pink-100 w-16 h-16 rounded-full flex items-center justify-center mr-4">
-                <span className="text-2xl">🤱</span>
-              </div>
+              
               <div>
                 <h1 className="text-3xl font-bold text-gray-800 mb-2">
                   Patient Dashboard
                 </h1>
                 <p className="text-gray-600 text-lg">
-                  Welcome back, {session.user.name}! 💖
+                  Welcome back, {session.user.name}! 
                 </p>
               </div>
             </div>
@@ -202,15 +200,15 @@ export default function PatientDashboard() {
             <div className="flex gap-3">
               <button
                 onClick={() => router.push("/patient-dashboard/symptom-logger")}
-                className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                className="bg-pink-50 p-2.5 pl-3 pr-3 text-md text-pink-600 rounded-md  hover:bg-pink-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
-                📝 Log Symptoms
+                Log Symptoms
               </button>
               <button
                 onClick={() => router.push("/api/auth/signout")}
-                className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                className="bg-pink-50 p-2.5 pl-3 pr-3 text-md text-pink-600 rounded-md  hover:bg-pink-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
-                🚪 Sign Out
+                Sign Out
               </button>
             </div>
           </div>
@@ -231,7 +229,7 @@ export default function PatientDashboard() {
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-800 flex items-center">
-                <span className="bg-pink-100 p-2 rounded-lg mr-3">📝</span>
+              
                 My Symptoms
               </h2>
               <span className="bg-pink-100 text-pink-700 px-4 py-2 rounded-full text-sm font-bold">
@@ -326,7 +324,7 @@ export default function PatientDashboard() {
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-800 flex items-center">
-                <span className="bg-blue-100 p-2 rounded-lg mr-3">📅</span>
+                
                 Upcoming Appointments
               </h2>
               <span className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-bold">
@@ -337,7 +335,7 @@ export default function PatientDashboard() {
             {upcomingAppointments.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
                 <div className="w-20 h-20 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span className="text-3xl">📅</span>
+               
                 </div>
                 <p className="text-xl font-bold text-gray-700 mb-2">
                   No upcoming appointments
@@ -407,7 +405,7 @@ export default function PatientDashboard() {
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-800 flex items-center">
-                <span className="bg-red-100 p-2 rounded-lg mr-3">⚠️</span>
+                
                 Missed Appointments
               </h2>
               <span className="bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-bold">
