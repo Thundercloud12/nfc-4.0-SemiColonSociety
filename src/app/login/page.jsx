@@ -40,7 +40,7 @@ export default function OTPLogin() {
       if (session.user.role === 'asha') {
         router.push('/asha-dashboard');
       } else {
-        router.push('/'); // Default redirect for other roles
+        // router.push('/'); // Default redirect for other roles
       }
     }
   }, [session, router]);
