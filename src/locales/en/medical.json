@@ -1,0 +1,37 @@
+{
+  "appointments": {
+    "title": "Appointments",
+    "upcoming": "Upcoming Appointments",
+    "missed": "Missed Appointments",
+    "book": "Book Appointment",
+    "reschedule": "Reschedule",
+    "cancel": "Cancel",
+    "confirmed": "Confirmed",
+    "pending": "Pending",
+    "cancelled": "Cancelled",
+    "noUpcoming": "No upcoming appointments",
+    "noMissed": "No missed appointments",
+    "with": "with",
+    "at": "at",
+    "reason": "Reason",
+    "notes": "Notes"
+  },
+  "symptoms": {
+    "title": "Symptoms",
+    "log": "Log Symptoms",
+    "recent": "Recent Symptoms",
+    "severity": "Severity",
+    "mild": "Mild",
+    "moderate": "Moderate",
+    "severe": "Severe",
+    "duration": "Duration",
+    "description": "Description",
+    "priority": "Priority",
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "generalCondition": "General Condition",
+    "additionalNotes": "Additional Notes",
+    "recommendedActions": "Recommended Actions"
+  }
+}

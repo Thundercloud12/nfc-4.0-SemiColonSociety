@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/lib/useTranslation";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import {
   IconBrandGithub,
   IconBrandGoogle,
@@ -20,6 +22,7 @@ export default function OTPLogin() {
   const [loading, setLoading] = useState(false);
   const { data: session } = useSession();
   const router = useRouter();
+  const { t } = useTranslation('auth');
 
   useEffect(() => {
     if (session) {
@@ -115,22 +118,27 @@ export default function OTPLogin() {
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-50 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full">
         <div className="bg-white rounded-2xl shadow-xl p-8 ">
+          {/* Language Switcher */}
+          <div className="flex justify-end mb-4">
+            <LanguageSwitcher />
+          </div>
+          
           {/* Header */}
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h2>
-            <p className="text-gray-600">Sign in to your MaternalCare account</p>
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">{t('auth.welcomeBack')}</h2>
+            <p className="text-gray-600">{t('auth.loginSubtitle')}</p>
           </div>
 
           {!otpSent ? (
             <form onSubmit={requestOtp} className="space-y-6">
               
                 <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                  Login Credentials
+                  {t('auth.login')} {t('auth.credentials')}
                 </h3>
                 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Email or Phone Number
+                    {t('auth.email')} / {t('auth.phone')}
                   </label>
                   <input
                     type="text"
@@ -138,7 +146,7 @@ export default function OTPLogin() {
                     onChange={(e) => setIdentifier(e.target.value)}
                     required
                     className="w-full px-4 py-3 border-2 border-pink-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200"
-                    placeholder="Enter your email or phone"
+                    placeholder={`${t('auth.email')} या ${t('auth.phone')}`}
                   />
                 </div>
               
@@ -154,10 +162,10 @@ export default function OTPLogin() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Sending OTP...
+                    {t('auth.sendingOTP')}
                   </span>
                 ) : (
-                  "Send OTP"
+                  t('auth.sendOTP')
                 )}
               </button>
             </form>
@@ -165,20 +173,18 @@ export default function OTPLogin() {
             <form onSubmit={verifyOtp} className="space-y-6">
               <div className="bg-pink-50 p-6 rounded-xl border-2 border-pink-200">
                 <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                  
-                  Verify OTP
+                  {t('auth.verifyOTP')}
                 </h3>
                 
                 <div className="mb-4">
                   <div className="flex items-center p-3 bg-pink-100 rounded-lg text-sm text-pink-800">
-                    
-                    OTP sent to: <span className="font-semibold ml-1">{identifier}</span>
+                    {t('auth.otpSentTo')} <span className="font-semibold ml-1">{identifier}</span>
                   </div>
                 </div>
                 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Enter 6-Digit OTP
+                    {t('auth.enterOTP')}
                   </label>
                   <input
                     type="text"

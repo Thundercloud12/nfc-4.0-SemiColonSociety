@@ -87,7 +87,18 @@ const userSchema = new Schema(
                 type: String,
                 required: false
             }
-        }
+        },
+        pushSubscriptions: [{
+            endpoint: String,
+            keys: {
+                p256dh: String,
+                auth: String
+            },
+            deviceInfo: {
+                userAgent: String,
+                timestamp: { type: Date, default: Date.now }
+            }
+        }]
     },
     { timestamps: true }
 );

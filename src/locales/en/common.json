@@ -1,0 +1,22 @@
+{
+  "navigation": {
+    "home": "Home",
+    "appointment": "Appointment",
+    "family": "Family",
+    "login": "Login",
+    "brandName": "MaternalCare"
+  },
+  "hero": {
+    "title": "Welcome to",
+    "titleHighlight": "Maternity Care",
+    "subtitle": "Your trusted platform for maternal health — track your wellness, book appointments, and connect with healthcare professionals, all in one place",
+    "getStarted": "Get Started"
+  },
+  "features": {
+    "title": "Features"
+  },
+  "buttons": {
+    "getStarted": "Get Started",
+    "learnMore": "Learn More"
+  }
+}

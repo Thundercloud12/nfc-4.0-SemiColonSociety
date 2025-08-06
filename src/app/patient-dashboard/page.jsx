@@ -3,10 +3,14 @@
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "@/lib/useTranslation";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import PushNotificationSetup from "@/components/PushNotificationSetup";
 
 export default function PatientDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { t } = useTranslation('dashboard');
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [missedAppointments, setMissedAppointments] = useState([]);
   const [symptomLogs, setSymptomLogs] = useState([]);
@@ -191,29 +195,35 @@ export default function PatientDashboard() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                  Patient Dashboard
+                  {t('patient.dashboard')}
                 </h1>
                 <p className="text-gray-600 text-lg">
-                  Welcome back, {session.user.name}! 💖
+                  {t('dashboard.welcome')}, {session.user.name}! 💖
                 </p>
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 items-center">
+              <LanguageSwitcher />
               <button
                 onClick={() => router.push("/patient-dashboard/symptom-logger")}
                 className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
-                📝 Log Symptoms
+                📝 {t('patient.logSymptoms')}
               </button>
               <button
                 onClick={() => router.push("/api/auth/signout")}
                 className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
-                🚪 Sign Out
+                🚪 {t('dashboard.signOut')}
               </button>
             </div>
           </div>
+        </div>
+
+        {/* Push Notification Setup */}
+        <div className="mb-8">
+          <PushNotificationSetup />
         </div>
 
         {/* Emergency Button */}

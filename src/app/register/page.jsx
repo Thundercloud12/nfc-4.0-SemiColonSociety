@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
+import { useTranslation } from "@/lib/useTranslation";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const LocationMap = dynamic(() => import('../../components/LocationMap'), { ssr: false });
 
 export default function RegisterForm() {
+  const { t } = useTranslation('auth');
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -240,23 +243,27 @@ export default function RegisterForm() {
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-50 py-12 px-4">
       <div className="max-w-2xl mx-auto bg-pink-50">
         <div className="bg-white rounded-2xl shadow-xl p-8">
+          {/* Language Switcher */}
+          <div className="flex justify-end mb-4">
+            <LanguageSwitcher />
+          </div>
+          
           <div className="text-center mb-8">
-            <h2 className="text-4xl font-bold text-gray-800 mb-2">Create Account</h2>
-            <p className="text-gray-600 text-lg">Join MaternalCare for better health management</p>
+            <h2 className="text-4xl font-bold text-gray-800 mb-2">{t('auth.createAccount')}</h2>
+            <p className="text-gray-600 text-lg">{t('auth.registerSubtitle')}</p>
           </div>
           
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Information Section */}
             <div className="bg-pink-50 p-6 rounded-xl">
               <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-             
                 Basic Information
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Full Name *
+                    {t('auth.name')} *
                   </label>
                   <input
                     type="text"
@@ -264,14 +271,14 @@ export default function RegisterForm() {
                     value={formData.name}
                     onChange={handleInputChange}
                     required
-                    placeholder="Enter your full name"
+                    placeholder={t('auth.name')}
                     className="w-full px-4 py-3 border-2 border-pink-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200"
                   />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Phone Number *
+                    {t('auth.phone')} *
                   </label>
                   <input
                     type="tel"

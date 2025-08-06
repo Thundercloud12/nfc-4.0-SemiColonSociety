@@ -3,10 +3,14 @@
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "@/lib/useTranslation";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import ASHANotificationSender from "@/components/ASHANotificationSender";
 
 export default function AshaDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { t } = useTranslation('dashboard');
   const [patients, setPatients] = useState([]);
   const [patientCode, setPatientCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -89,7 +93,7 @@ export default function AshaDashboard() {
                 ASHA Worker Dashboard
               </h1>
               <p className="text-gray-600 text-lg">
-                Patient: <span className="font-semibold">{session.user.name}</span>
+                Asha Worker: <span className="font-semibold">{session.user.name}</span>
               </p>
             </div>
             <div className="flex gap-3">
@@ -218,6 +222,11 @@ export default function AshaDashboard() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Notification Sender Section */}
+        <div className="mt-8">
+          <ASHANotificationSender />
         </div>
       </div>
     </div>

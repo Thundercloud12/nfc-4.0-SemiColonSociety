@@ -1,0 +1,49 @@
+{
+  "dashboard": {
+    "welcome": "Welcome",
+    "loading": "Loading...",
+    "error": "Error",
+    "noData": "No data available",
+    "refresh": "Refresh",
+    "backToDashboard": "Back to Dashboard",
+    "signOut": "Sign Out",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "patient": {
+    "dashboard": "Patient Dashboard",
+    "symptoms": "Symptoms",
+    "appointments": "Appointments",
+    "symptomLogger": "Symptom Logger",
+    "logSymptoms": "Log Symptoms",
+    "mySymptoms": "My Symptoms",
+    "recentLogs": "Recent Symptom Logs",
+    "noSymptoms": "No symptoms logged yet",
+    "trackHealth": "Track Your Health",
+    "viewAll": "View All"
+  },
+  "family": {
+    "dashboard": "Family Dashboard",
+    "patientInfo": "Patient Information",
+    "memberSince": "Member Since",
+    "pregnancyInfo": "Pregnancy Information",
+    "pregnancyMonth": "Pregnancy Month",
+    "expectedDelivery": "Expected Delivery",
+    "medications": "Medications",
+    "highRisk": "High Risk Pregnancy",
+    "months": "months",
+    "noSymptomLogs": "No symptom logs recorded",
+    "noAppointments": "No appointments scheduled",
+    "monitoring": "Monitoring health information for"
+  },
+  "asha": {
+    "dashboard": "ASHA Dashboard",
+    "patients": "Patients",
+    "addPatient": "Add Patient",
+    "removePatient": "Remove Patient",
+    "patientDetails": "Patient Details",
+    "totalPatients": "Total Patients",
+    "recentActivity": "Recent Activity",
+    "managePatients": "Manage Patients"
+  }
+}

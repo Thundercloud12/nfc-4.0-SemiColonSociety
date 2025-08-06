@@ -1,0 +1,37 @@
+{
+  "appointments": {
+    "title": "अपॉइंटमेंट",
+    "upcoming": "आगामी अपॉइंटमेंट",
+    "missed": "छूटे हुए अपॉइंटमेंट",
+    "book": "अपॉइंटमेंट बुक करें",
+    "reschedule": "पुनर्निर्धारित करें",
+    "cancel": "रद्द करें",
+    "confirmed": "पुष्टि की गई",
+    "pending": "लंबित",
+    "cancelled": "रद्द",
+    "noUpcoming": "कोई आगामी अपॉइंटमेंट नहीं",
+    "noMissed": "कोई छूटे हुए अपॉइंटमेंट नहीं",
+    "with": "के साथ",
+    "at": "पर",
+    "reason": "कारण",
+    "notes": "नोट्स"
+  },
+  "symptoms": {
+    "title": "लक्षण",
+    "log": "लक्षण दर्ज करें",
+    "recent": "हाल के लक्षण",
+    "severity": "गंभीरता",
+    "mild": "हल्का",
+    "moderate": "मध्यम",
+    "severe": "गंभीर",
+    "duration": "अवधि",
+    "description": "विवरण",
+    "priority": "प्राथमिकता",
+    "low": "कम",
+    "medium": "मध्यम",
+    "high": "उच्च",
+    "generalCondition": "सामान्य स्थिति",
+    "additionalNotes": "अतिरिक्त नोट्स",
+    "recommendedActions": "अनुशंसित कार्य"
+  }
+}

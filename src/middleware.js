@@ -72,6 +72,6 @@ export default withAuth(
 export const config = {
   matcher: [
     // Exclude _next, images, favicon, public, and API routes
-    "/((?!_next/static|_next/image|favicon.ico|public/|api/).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api/|images/).*)",
   ],
 };

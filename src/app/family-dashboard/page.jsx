@@ -4,6 +4,9 @@ import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import OfflineStatus from "@/components/OfflineStatus";
+import { useTranslation } from "@/lib/useTranslation";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import PushNotificationSetup from "@/components/PushNotificationSetup";
 
 // Initialize offline manager
 let offlineManager = null;
@@ -17,6 +20,7 @@ if (typeof window !== 'undefined') {
 export default function FamilyDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { t } = useTranslation('dashboard');
   const [patient, setPatient] = useState(null);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -306,17 +310,25 @@ export default function FamilyDashboard() {
             <div>
               <h1 className="text-4xl font-bold text-gray-800 mb-3 flex items-center">
                 <span className="bg-pink-100 p-3 rounded-full mr-4">👨‍👩‍👧‍👦</span>
-                Family Dashboard
+                {t('family.dashboard')}
               </h1>
-              <p className="text-gray-600 text-lg">Monitoring health information for {patient.name}</p>
+              <p className="text-gray-600 text-lg">{t('family.monitoring')} {patient.name}</p>
             </div>
-            <button
-              onClick={() => router.push("/api/auth/signout")}
-              className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg"
-            >
-              🚪 Sign Out
-            </button>
+            <div className="flex items-center gap-4">
+              <LanguageSwitcher />
+              <button
+                onClick={() => router.push("/api/auth/signout")}
+                className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg"
+              >
+                🚪 {t('dashboard.signOut')}
+              </button>
+            </div>
           </div>
+        </div>
+
+        {/* Push Notification Setup */}
+        <div className="mb-8">
+          <PushNotificationSetup />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

@@ -1,0 +1,49 @@
+{
+  "dashboard": {
+    "welcome": "स्वागत है",
+    "loading": "लोड हो रहा है...",
+    "error": "त्रुटि",
+    "noData": "कोई डेटा उपलब्ध नहीं",
+    "refresh": "रीफ्रेश करें",
+    "backToDashboard": "डैशबोर्ड पर वापस जाएं",
+    "signOut": "साइन आउट",
+    "profile": "प्रोफाइल",
+    "settings": "सेटिंग्स"
+  },
+  "patient": {
+    "dashboard": "रोगी डैशबोर्ड",
+    "symptoms": "लक्षण",
+    "appointments": "अपॉइंटमेंट",
+    "symptomLogger": "लक्षण लॉगर",
+    "logSymptoms": "लक्षण दर्ज करें",
+    "mySymptoms": "मेरे लक्षण",
+    "recentLogs": "हाल के लक्षण लॉग",
+    "noSymptoms": "अभी तक कोई लक्षण दर्ज नहीं हुए",
+    "trackHealth": "अपनी स्वास्थ्य को ट्रैक करें",
+    "viewAll": "सभी देखें"
+  },
+  "family": {
+    "dashboard": "पारिवारिक डैशबोर्ड",
+    "patientInfo": "रोगी की जानकारी",
+    "memberSince": "सदस्य बने",
+    "pregnancyInfo": "गर्भावस्था की जानकारी",
+    "pregnancyMonth": "गर्भावस्था का महीना",
+    "expectedDelivery": "अपेक्षित प्रसव",
+    "medications": "दवाएं",
+    "highRisk": "उच्च जोखिम गर्भावस्था",
+    "months": "महीने",
+    "noSymptomLogs": "कोई लक्षण लॉग दर्ज नहीं",
+    "noAppointments": "कोई अपॉइंटमेंट निर्धारित नहीं",
+    "monitoring": "के लिए स्वास्थ्य जानकारी की निगरानी"
+  },
+  "asha": {
+    "dashboard": "आशा डैशबोर्ड",
+    "patients": "रोगी",
+    "addPatient": "रोगी जोड़ें",
+    "removePatient": "रोगी हटाएं",
+    "patientDetails": "रोगी विवरण",
+    "totalPatients": "कुल रोगी",
+    "recentActivity": "हाल की गतिविधि",
+    "managePatients": "रोगियों का प्रबंधन करें"
+  }
+}

@@ -2,9 +2,11 @@
 import React from "react";
 import { Spotlight } from "./ui/Spotlight";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "@/lib/useTranslation";
 
 const Hero = () => {
   const router = useRouter();
+  const { t, locale } = useTranslation('common');
 
   const handleClick = () => {
     router.push("/register");
@@ -20,12 +22,20 @@ const Hero = () => {
       {/* Hero Content */}
       <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
         <h1 className="text-5xl md:text-7xl font-bold">
-          Welcome to <span className="text-pink-500">Maternity Care</span>
+          {locale === 'hi' ? (
+            <>
+              <span className="text-pink-500">{t('hero.titleHighlight')}</span> {t('hero.title')}
+            </>
+          ) : (
+            <>
+              {t('hero.title')} <span className="text-pink-500">{t('hero.titleHighlight')}</span>
+            </>
+          )}
         </h1>
-        <p className="mt-4 text-lg md:text-xl max-w-3xl text-gray-800">Your trusted platform for maternal health — track your wellness, book appointments, and connect with healthcare professionals, all in one place</p>
+        <p className="mt-4 text-lg md:text-xl max-w-3xl text-gray-800">{t('hero.subtitle')}</p>
 
         <button onClick={handleClick} className={`mt-6 px-6 py-3 rounded-full bg-pink-500 text-white hover:bg-pink-600 transition`}>
-          Get Started
+          {t('hero.getStarted')}
         </button>
       </div>
     </div>

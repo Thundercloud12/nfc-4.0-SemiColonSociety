@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession, signIn } from 'next-auth/react';
+import { useTranslation } from "@/lib/useTranslation";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default function FamilyLogin() {
   const [uniqueCode, setUniqueCode] = useState('');
@@ -11,6 +13,7 @@ export default function FamilyLogin() {
   const [message, setMessage] = useState('');
   const { data: session } = useSession();
   const router = useRouter();
+  const { t } = useTranslation('auth');
 
   useEffect(() => {
     if (session && session.user.role === 'family') {

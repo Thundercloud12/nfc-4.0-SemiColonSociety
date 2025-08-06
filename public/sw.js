@@ -299,6 +299,112 @@ self.addEventListener('sync', (event) => {
   }
 });
 
+// Handle push events
+self.addEventListener('push', event => {
+  console.log('[SW] Push received:', event);
+  
+  if (!event.data) {
+    console.log('[SW] No data in push event');
+    return;
+  }
+
+  try {
+    const data = event.data.json();
+    console.log('[SW] Push data:', data);
+    
+    const options = {
+      body: data.body,
+      icon: data.icon || '/favicon.ico',
+      badge: data.badge || '/favicon.ico',
+      data: data.data,
+      tag: data.data?.type || 'default',
+      requireInteraction: data.data?.type === 'emergency',
+      actions: [
+        {
+          action: 'view',
+          title: 'View',
+          icon: '/favicon.ico'
+        },
+        {
+          action: 'dismiss',
+          title: 'Dismiss'
+        }
+      ],
+      vibrate: data.data?.type === 'emergency' ? [200, 100, 200] : [100]
+    };
+
+    event.waitUntil(
+      self.registration.showNotification(data.title, options)
+    );
+  } catch (error) {
+    console.error('[SW] Error handling push:', error);
+    
+    // Fallback notification
+    event.waitUntil(
+      self.registration.showNotification('New Notification', {
+        body: 'You have a new message from your healthcare provider',
+        icon: '/favicon.ico'
+      })
+    );
+  }
+});
+
+// Handle notification clicks
+self.addEventListener('notificationclick', event => {
+  console.log('[SW] Notification clicked:', event);
+  
+  event.notification.close();
+
+  if (event.action === 'dismiss') {
+    return;
+  }
+
+  // Handle different notification types
+  const data = event.notification.data;
+  let url = '/';
+
+  if (data && data.url) {
+    url = data.url;
+  } else {
+    // Fallback URL routing based on type
+    switch (data?.type) {
+      case 'appointment':
+        url = '/patient-dashboard';
+        break;
+      case 'emergency':
+        url = '/asha-dashboard';
+        break;
+      case 'health_checkup':
+        url = '/patient-dashboard/symptom-logger';
+        break;
+      case 'custom':
+        url = '/patient-dashboard';
+        break;
+      default:
+        url = '/';
+    }
+  }
+
+  event.waitUntil(
+    clients.matchAll({
+      type: 'window',
+      includeUncontrolled: true
+    }).then(clientList => {
+      // Check if app is already open
+      for (const client of clientList) {
+        if (client.url.includes(url) && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      
+      // Open new window/tab
+      if (clients.openWindow) {
+        return clients.openWindow(url);
+      }
+    })
+  );
+});
+
 // Handle messages from clients
 self.addEventListener('message', (event) => {
   console.log('[SW] Message received:', event.data);
