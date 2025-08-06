@@ -20,32 +20,49 @@ export default withAuth(
       const userRole = token.role;
       console.log("Middleware - User role:", userRole);
       
-      // Redirect family members to family dashboard if they try to access other dashboards
-      if (userRole === "family") {
-        if (pathname === "/patient-dashboard" || pathname === "/asha-dashboard") {
-          console.log("Redirecting family member from", pathname, "to /family-dashboard");
-          return NextResponse.redirect(new URL("/family-dashboard", req.url));
-        }
-        // Redirect family members from login pages to their dashboard
-        if (pathname === "/login" || pathname === "/register") {
-          console.log("Redirecting family member from", pathname, "to /family-dashboard");
-          return NextResponse.redirect(new URL("/family-dashboard", req.url));
-        }
-        // Redirect family members from root to their dashboard
-        if (pathname === "/") {
-          console.log("Redirecting family member from root to /family-dashboard");
+      // Redirect authenticated users from public pages to their appropriate dashboards
+      if (pathname === "/") {
+        if (userRole === "pregnant") {
+          console.log("Redirecting pregnant user to /patient-dashboard");
+          return NextResponse.redirect(new URL("/patient-dashboard", req.url));
+        } else if (userRole === "asha") {
+          console.log("Redirecting ASHA worker to /asha-dashboard");
+          return NextResponse.redirect(new URL("/asha-dashboard", req.url));
+        } else if (userRole === "family") {
+          console.log("Redirecting family member to /family-dashboard");
           return NextResponse.redirect(new URL("/family-dashboard", req.url));
         }
       }
       
-      // Redirect other users away from family dashboard
-      if (userRole !== "family" && pathname === "/family-dashboard") {
+      // Protect role-specific routes
+      if (userRole === "pregnant") {
+        // Pregnant users can only access patient-related routes
+        if (pathname === "/asha-dashboard" || pathname === "/family-dashboard") {
+          console.log("Redirecting pregnant user from", pathname, "to /patient-dashboard");
+          return NextResponse.redirect(new URL("/patient-dashboard", req.url));
+        }
+      } else if (userRole === "asha") {
+        // ASHA workers can only access ASHA-related routes
+        if (pathname === "/patient-dashboard" || pathname === "/family-dashboard") {
+          console.log("Redirecting ASHA worker from", pathname, "to /asha-dashboard");
+          return NextResponse.redirect(new URL("/asha-dashboard", req.url));
+        }
+      } else if (userRole === "family") {
+        // Family members can only access family-related routes
+        if (pathname === "/patient-dashboard" || pathname === "/asha-dashboard") {
+          console.log("Redirecting family member from", pathname, "to /family-dashboard");
+          return NextResponse.redirect(new URL("/family-dashboard", req.url));
+        }
+      }
+      
+      // Prevent family-login access for authenticated users
+      if (pathname === "/family-login") {
         if (userRole === "pregnant") {
           return NextResponse.redirect(new URL("/patient-dashboard", req.url));
         } else if (userRole === "asha") {
           return NextResponse.redirect(new URL("/asha-dashboard", req.url));
-        } else {
-          return NextResponse.redirect(new URL("/", req.url));
+        } else if (userRole === "family") {
+          return NextResponse.redirect(new URL("/family-dashboard", req.url));
         }
       }
     }

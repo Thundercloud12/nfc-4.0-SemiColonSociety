@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState, useEffect, createContext, useContext } from 'react';
 
@@ -7,7 +7,7 @@ const LanguageContext = createContext();
 
 export const LanguageProvider = ({ children }) => {
   const [locale, setLocale] = useState('en');
-  
+
   // Load saved language from localStorage on mount
   useEffect(() => {
     const savedLocale = localStorage.getItem('preferred-language');
@@ -15,7 +15,7 @@ export const LanguageProvider = ({ children }) => {
       setLocale(savedLocale);
     }
   }, []);
-  
+
   // Save language to localStorage when it changes
   const changeLocale = (newLocale) => {
     setLocale(newLocale);
@@ -34,18 +34,15 @@ export const useTranslation = (namespace = 'common') => {
   if (!context) {
     throw new Error('useTranslation must be used within a LanguageProvider');
   }
-  
+
   const { locale, changeLocale } = context;
   const [translations, setTranslations] = useState({});
-
-  // Update locale based on URL or localStorage
- 
 
   useEffect(() => {
     const loadTranslations = async () => {
       try {
-        const module = await import(`../locales/${locale}/${namespace}.json`);
-        setTranslations(module.default);
+        const translationModule = await import(`../locales/${locale}/${namespace}.json`);
+        setTranslations(translationModule.default);
       } catch (error) {
         console.warn(`Could not load translations for ${locale}/${namespace}`, error);
         // Fallback to English
