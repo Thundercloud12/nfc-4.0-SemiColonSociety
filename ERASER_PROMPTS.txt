@@ -1,0 +1,124 @@
+ERASER.IO VISUALIZATION PROMPTS
+==============================
+
+PROMPT 1: SYSTEM ARCHITECTURE DIAGRAM
+-------------------------------------
+"Create a system architecture diagram for a maternal healthcare platform with the following components:
+
+Frontend: Next.js 15 + React 18 + Tailwind CSS (web interface)
+Backend: Next.js API Routes + Node.js (server logic)
+Database: MongoDB with Mongoose ODM (data storage)
+AI Service: Google Gemini AI 2.5-Flash (symptom analysis)
+External APIs: Twilio SMS, Web Push API, Geolocation API
+Authentication: NextAuth.js + JWT tokens
+Storage: IndexedDB (offline), MongoDB Atlas (cloud)
+PWA Features: Service Workers, Web App Manifest
+
+Show data flow between components with arrows and include security layers."
+
+PROMPT 2: USER JOURNEY FLOWCHART
+--------------------------------
+"Design a user journey flowchart for pregnant patients using a healthcare app:
+
+Starting point: User Registration/Login
+Main paths:
+1. Symptom Logging → AI Conversation → Priority Assessment → Data Storage
+2. Emergency Alert → Location Capture → SMS to ASHA → Response Coordination
+3. Appointment Viewing → Upcoming/Missed Status → Contact ASHA
+4. Push Notifications → Subscription → Receive Alerts
+
+Include decision points, error handling, and offline scenarios. Use different colors for patient actions, system processes, and external services."
+
+PROMPT 3: TECHNOLOGY STACK LAYERS
+---------------------------------
+"Create a layered technology stack diagram with these layers from top to bottom:
+
+Presentation Layer: React Components, Tailwind CSS, PWA Features
+Application Layer: Next.js Framework, NextAuth.js, API Routes
+Business Logic Layer: Google Gemini AI, Symptom Prioritization, Notification System
+Data Access Layer: Mongoose ODM, IndexedDB, Session Management
+External Services Layer: Twilio SMS, VAPID Push, Geolocation
+Infrastructure Layer: MongoDB Atlas, Vercel Hosting, Service Workers
+
+Show interactions between layers with bidirectional arrows."
+
+PROMPT 4: DATA FLOW DIAGRAM
+---------------------------
+"Design a data flow diagram showing how patient symptom data moves through the system:
+
+1. Patient Input (voice/text) → Web Speech API → Frontend
+2. Frontend → Next.js API → Google Gemini AI
+3. Gemini AI Response → Symptom Extraction → Priority Assessment
+4. Structured Data → MongoDB Storage via Mongoose
+5. Push Notifications → ASHA Dashboard → Patient Updates
+6. Offline Flow: IndexedDB → Background Sync → MongoDB
+
+Include data transformation points and error handling paths."
+
+PROMPT 5: ROLE-BASED ACCESS DIAGRAM
+-----------------------------------
+"Create a role-based access control diagram showing three user types:
+
+Pregnant Patients: Access to symptom logging, emergency alerts, appointment viewing, family code sharing
+ASHA Workers: Patient management, appointment scheduling, bulk notifications, emergency responses
+Family Members: Limited patient monitoring, appointment viewing, emergency contact access
+
+Show permissions matrix with different access levels and authentication flows."
+
+PROMPT 6: AI CONVERSATION WORKFLOW
+----------------------------------
+"Design a flowchart for the AI-powered symptom conversation:
+
+Start: Patient begins symptom logging
+Process: AI asks questions → Patient responds → Context maintained
+Decision Points: NSFW detection (restart), Stop words (end session), Continue conversation
+AI Processing: Gemini analysis → Follow-up questions → Symptom extraction
+End: Priority assessment → Medical recommendations → Data storage
+
+Include multilingual support and voice/text input options."
+
+PROMPT 7: EMERGENCY ALERT SYSTEM
+--------------------------------
+"Create a sequence diagram for the emergency alert system:
+
+Actors: Patient, System, Geolocation API, Twilio SMS, ASHA Worker
+Flow:
+1. Patient clicks emergency button
+2. System checks cooldown timer
+3. Geolocation API captures coordinates
+4. System retrieves patient profile
+5. Twilio sends SMS to ASHA with location
+6. ASHA receives alert and responds
+7. System logs emergency event
+
+Include timing constraints and error scenarios."
+
+PROMPT 8: OFFLINE-FIRST ARCHITECTURE
+------------------------------------
+"Design an offline-first architecture diagram showing:
+
+Online Mode: Direct API calls → Real-time processing → Immediate responses
+Offline Mode: Local storage (IndexedDB) → Service Worker → Background sync queue
+Sync Process: Connection restored → Queue processing → Conflict resolution → Server update
+
+Show data synchronization strategies and conflict resolution mechanisms."
+
+PROMPT 9: NOTIFICATION SYSTEM ARCHITECTURE
+------------------------------------------
+"Create a push notification system diagram with:
+
+Components: VAPID keys, Service Worker, Push API, User subscriptions
+Flow: ASHA creates notification → Server processes → Push service → Service Worker → User notification
+Types: Appointment reminders, health checkups, emergency alerts, custom messages
+
+Include subscription management and delivery confirmation."
+
+PROMPT 10: DATABASE SCHEMA VISUALIZATION
+----------------------------------------
+"Design an entity relationship diagram for the healthcare platform:
+
+Entities: Users (patients/ASHA/family), SymptomLogs, Appointments, Emergencies, Notifications
+Relationships: One-to-many between users and symptom logs, ASHA to multiple patients, family access codes
+Attributes: User roles, symptom priorities, appointment status, location data, push subscriptions
+
+Show primary keys, foreign keys, and data types for main fields."

@@ -1,0 +1,220 @@
+SYSTEM WORKFLOW - NFC 4.0 MATERNAL HEALTHCARE PLATFORM
+======================================================
+
+USER REGISTRATION & AUTHENTICATION FLOW:
+----------------------------------------
+1. USER ACCESSES PLATFORM
+   → Next.js application loads
+   → NextAuth.js handles authentication
+   → Role-based redirection (pregnant/asha/family)
+
+2. PATIENT REGISTRATION
+   → User fills registration form
+   → Data stored in MongoDB via Mongoose
+   → NextAuth.js creates secure session
+   → JWT token generated for authentication
+
+3. ROLE-BASED DASHBOARD ACCESS
+   → Pregnant users → Patient Dashboard
+   → ASHA workers → ASHA Dashboard
+   → Family members → Family Dashboard
+
+SYMPTOM LOGGING WORKFLOW:
+------------------------
+1. PATIENT INITIATES SYMPTOM LOGGING
+   → Clicks "Log Symptoms" button
+   → Navigates to symptom logger page
+   → AI conversation interface loads
+
+2. CONVERSATIONAL SYMPTOM COLLECTION
+   → Patient describes symptoms (text or voice)
+   → Web Speech API converts voice to text
+   → Message sent to /api/patient/symptom-chat
+
+3. AI PROCESSING & RESPONSE
+   → Google Gemini AI analyzes symptoms
+   → AI asks follow-up questions
+   → Conversation continues until completion
+   → Patient says "stop" to end session
+
+4. AUTOMATIC PRIORITY ASSESSMENT
+   → AI extracts structured symptom data
+   → Calls /api/symptom-priority endpoint
+   → Gemini AI assigns priority (LOW/MEDIUM/HIGH)
+   → Medical recommendations generated
+
+5. DATA STORAGE & FEEDBACK
+   → Symptom log saved to MongoDB
+   → Priority assessment stored
+   → Patient receives immediate feedback
+   → Dashboard updated with new log
+
+EMERGENCY ALERT WORKFLOW:
+------------------------
+1. EMERGENCY BUTTON ACTIVATION
+   → Patient clicks emergency button
+   → 60-second cooldown prevents spam
+   → Geolocation API requests location
+
+2. LOCATION CAPTURE & PROCESSING
+   → GPS coordinates obtained
+   → Data sent to /api/emergency endpoint
+   → Patient information retrieved from database
+
+3. ASHA WORKER NOTIFICATION
+   → Emergency alert triggered
+   → Twilio SMS API sends alert to ASHA
+   → Alert includes patient details and location
+   → Immediate response coordination enabled
+
+PUSH NOTIFICATION WORKFLOW:
+--------------------------
+1. NOTIFICATION SUBSCRIPTION
+   → Patient/Family subscribes to notifications
+   → Service Worker registers push subscription
+   → VAPID keys authenticate subscription
+   → Subscription stored in user profile
+
+2. ASHA NOTIFICATION SENDING
+   → ASHA worker accesses notification panel
+   → Selects notification type (appointment/health/custom)
+   → Composes message content
+   → Triggers bulk notification send
+
+3. NOTIFICATION DELIVERY
+   → /api/push/send-bulk processes request
+   → Web Push API delivers notifications
+   → Service Worker handles received notifications
+   → Notifications displayed to users
+
+APPOINTMENT MANAGEMENT WORKFLOW:
+-------------------------------
+1. APPOINTMENT SCHEDULING (ASHA)
+   → ASHA worker accesses patient list
+   → Creates new appointment entry
+   → Sets date, time, location, reason
+   → Appointment stored in MongoDB
+
+2. PATIENT NOTIFICATION
+   → Push notification sent to patient
+   → Email notification (if configured)
+   → Dashboard updated with appointment
+
+3. APPOINTMENT TRACKING
+   → Status automatically updated based on date
+   → Missed appointments flagged
+   → Patient dashboard shows status
+   → Follow-up actions triggered
+
+OFFLINE FUNCTIONALITY WORKFLOW:
+------------------------------
+1. OFFLINE DETECTION
+   → Navigator.onLine API monitors connectivity
+   → Service Worker handles offline scenarios
+   → IndexedDB stores data locally
+
+2. OFFLINE DATA STORAGE
+   → Symptom logs stored in IndexedDB
+   → User actions queued for sync
+   → Critical data preserved locally
+
+3. ONLINE SYNCHRONIZATION
+   → Connection restored detection
+   → Background sync triggered
+   → Local data uploaded to server
+   → Conflicts resolved automatically
+
+FAMILY ACCESS WORKFLOW:
+----------------------
+1. FAMILY CODE GENERATION
+   → Patient shares access code
+   → Code links to patient record
+   → Limited permissions assigned
+
+2. FAMILY DASHBOARD ACCESS
+   → Family member enters code
+   → Authentication verified
+   → Read-only patient data displayed
+
+3. MONITORING CAPABILITIES
+   → View appointment schedules
+   → Monitor symptom logs
+   → Access emergency contact info
+   → Limited notification access
+
+MULTILINGUAL SUPPORT WORKFLOW:
+-----------------------------
+1. LANGUAGE SELECTION
+   → User selects preferred language
+   → UI translations applied dynamically
+   → Language preference stored
+
+2. AI LANGUAGE PROCESSING
+   → Gemini AI responds in selected language
+   → Voice recognition supports multiple languages
+   → Text-to-speech in native language
+
+3. CONTENT LOCALIZATION
+   → Database content translated
+   → Error messages localized
+   → Cultural adaptation implemented
+
+DATA FLOW ARCHITECTURE:
+----------------------
+1. CLIENT-SIDE (Browser)
+   → React components render UI
+   → State management with hooks
+   → API calls to Next.js backend
+   → Local storage with IndexedDB
+
+2. SERVER-SIDE (Next.js API)
+   → API routes handle requests
+   → Authentication middleware
+   → Database operations via Mongoose
+   → External API integrations
+
+3. DATABASE LAYER (MongoDB)
+   → User profiles and authentication
+   → Symptom logs and priorities
+   → Appointment scheduling
+   → Notification subscriptions
+
+4. EXTERNAL SERVICES
+   → Google Gemini AI processing
+   → Twilio SMS delivery
+   → VAPID push notifications
+   → Geolocation services
+
+SECURITY WORKFLOW:
+-----------------
+1. AUTHENTICATION
+   → NextAuth.js session management
+   → JWT token validation
+   → Role-based access control
+
+2. DATA PROTECTION
+   → HTTPS encryption in transit
+   → Environment variable security
+   → Input validation and sanitization
+
+3. PRIVACY CONTROLS
+   → Medical data anonymization
+   → User consent management
+   → Data retention policies
+
+ERROR HANDLING & RECOVERY:
+-------------------------
+1. NETWORK FAILURES
+   → Automatic retry mechanisms
+   → Offline fallback strategies
+   → User feedback on failures
+
+2. AI SERVICE FAILURES
+   → Graceful degradation
+   → Default priority assignments
+   → Manual intervention options
+
+3. SYSTEM MONITORING
+   → Error logging and tracking
+   → Performance monitoring
+   → Automated recovery procedures

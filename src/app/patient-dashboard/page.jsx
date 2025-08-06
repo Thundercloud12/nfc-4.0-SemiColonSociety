@@ -15,6 +15,8 @@ export default function PatientDashboard() {
   const [missedAppointments, setMissedAppointments] = useState([]);
   const [symptomLogs, setSymptomLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [emergencyDisabled, setEmergencyDisabled] = useState(false);
+  const [emergencyCooldown, setEmergencyCooldown] = useState(0);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -126,6 +128,11 @@ export default function PatientDashboard() {
   };
 
  const handleEmergency = () => {
+  if (emergencyDisabled) {
+    alert(`Emergency alert is on cooldown. Please wait ${emergencyCooldown} more seconds.`);
+    return;
+  }
+
   if (!session) {
     alert("User session not found");
     return;
@@ -135,6 +142,22 @@ export default function PatientDashboard() {
     alert("Geolocation is not supported by your browser");
     return;
   }
+
+  // Disable the button and start cooldown
+  setEmergencyDisabled(true);
+  setEmergencyCooldown(60);
+
+  // Start countdown timer
+  const countdownInterval = setInterval(() => {
+    setEmergencyCooldown((prev) => {
+      if (prev <= 1) {
+        clearInterval(countdownInterval);
+        setEmergencyDisabled(false);
+        return 0;
+      }
+      return prev - 1;
+    });
+  }, 1000);
 
   navigator.geolocation.getCurrentPosition(
     async (position) => {
@@ -230,9 +253,17 @@ export default function PatientDashboard() {
         <div className="mb-8 flex justify-center">
           <button
             onClick={handleEmergency}
-            className="px-8 py-4 bg-red-600 text-white rounded-xl hover:bg-red-700 font-bold text-lg shadow-lg transition duration-200"
+            disabled={emergencyDisabled}
+            className={`px-8 py-4 rounded-xl font-bold text-lg shadow-lg transition duration-200 ${
+              emergencyDisabled 
+                ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
+                : 'bg-red-600 text-white hover:bg-red-700'
+            }`}
           >
-            🚨 Emergency Alert
+            {emergencyDisabled 
+              ? `🚨 Emergency Alert (${emergencyCooldown}s)` 
+              : '🚨 Emergency Alert'
+            }
           </button>
         </div>
 

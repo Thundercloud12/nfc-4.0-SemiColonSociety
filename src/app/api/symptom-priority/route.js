@@ -26,7 +26,7 @@ export async function POST(request) {
         }
 
         console.log("[Symptom Priority API] Initializing Gemini model...");
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         // Create a detailed prompt for priority assessment
         const prompt = `

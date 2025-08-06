@@ -248,6 +248,45 @@ export default function SymptomLogger() {
     setIsTyping(true);
 
     try {
+      // Check for NSFW words and refresh conversation if found
+      const nsfwWords = [
+        // English NSFW words
+        "fuck", "shit", "bitch", "damn", "hell", "ass", "dick", "pussy", "cock", "sex", "porn", "nude", "naked", "breast", "penis", "vagina",
+        // Hindi NSFW words
+        "मादरचोद", "भेनचोद", "रंडी", "गांडू", "चूतिया", "हरामी", "कुत्ता", "साला", "कमीना"
+      ];
+      
+      const containsNSFW = nsfwWords.some(word => 
+        currentMessage.toLowerCase().includes(word.toLowerCase())
+      );
+      
+      if (containsNSFW) {
+        // Clear conversation and restart
+        setMessages([]);
+        setSessionEnded(false);
+        setCurrentMessage("");
+        setIsLoading(false);
+        setIsTyping(false);
+        
+        // Show warning message
+        const warningMessage = {
+          type: "system",
+          content: selectedLanguage === 'hi' 
+            ? "⚠️ कृपया उपयुक्त भाषा का उपयोग करें। बातचीत को फिर से शुरू किया जा रहा है।"
+            : "⚠️ Please use appropriate language. Conversation is being restarted.",
+          timestamp: new Date()
+        };
+        
+        setTimeout(() => {
+          setMessages([warningMessage]);
+          setTimeout(() => {
+            initializeConversation();
+          }, 2000);
+        }, 500);
+        
+        return;
+      }
+
       // Check if user wants to end the session
       const stopWords = {
         en: ["stop", "that's all", "done", "finish", "end", "complete"],
