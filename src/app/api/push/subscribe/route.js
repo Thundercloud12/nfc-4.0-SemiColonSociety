@@ -1,23 +1,18 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { connectDb } from "@/lib/dbConnect";
 import User from "@/models/User";
+import { initApiRoute, errorResponse, successResponse } from "@/lib/apiUtils";
 
 export async function POST(request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { session, error } = await initApiRoute();
+    if (error) return error;
 
     const { subscription, deviceInfo } = await request.json();
     
     if (!subscription || !subscription.endpoint) {
-      return NextResponse.json({ error: "Invalid subscription data" }, { status: 400 });
+      return errorResponse("Invalid subscription data", 400);
     }
-
-    await connectDb();
     
     // Add subscription to user (avoid duplicates)
     await User.findByIdAndUpdate(session.user.id, {
@@ -34,23 +29,19 @@ export async function POST(request) {
     });
 
     console.log(`Push subscription added for user: ${session.user.id}`);
-    return NextResponse.json({ success: true, message: "Push subscription saved" });
+    return successResponse({ success: true, message: "Push subscription saved" });
   } catch (error) {
     console.error("Error saving push subscription:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return errorResponse(error.message, 500);
   }
 }
 
 export async function DELETE(request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { session, error } = await initApiRoute();
+    if (error) return error;
 
     const { endpoint } = await request.json();
-    
-    await connectDb();
     
     // Remove subscription from user
     await User.findByIdAndUpdate(session.user.id, {
@@ -60,9 +51,9 @@ export async function DELETE(request) {
     });
 
     console.log(`Push subscription removed for user: ${session.user.id}`);
-    return NextResponse.json({ success: true, message: "Push subscription removed" });
+    return successResponse({ success: true, message: "Push subscription removed" });
   } catch (error) {
     console.error("Error removing push subscription:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return errorResponse(error.message, 500);
   }
 }

@@ -1,47 +1,24 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { connectDb } from "@/lib/dbConnect";
 import { User } from "@/models/User";
 import SymptomLog from "@/models/SymptomLog";
 import Appointment from "@/models/Appointment";
+import { initApiRoute, errorResponse, successResponse } from "@/lib/apiUtils";
+import { getFamilyMemberWithPatient, getLinkedPatient } from "@/lib/familyUtils";
 
 export async function GET() {
     try {
-        const session = await getServerSession(authOptions);
-        
-        if (!session || session.user.role !== "family") {
-            return NextResponse.json(
-                { error: "Unauthorized - Family access required" },
-                { status: 401 }
-            );
-        }
-
-        await connectDb();
+        const { session, error } = await initApiRoute(['family']);
+        if (error) return error;
 
         // Get the family member's details
-        const familyMember = await User.findById(session.user.id);
-        
-        if (!familyMember || !familyMember.familyOf) {
-            return NextResponse.json(
-                { error: "No linked patient found for this family member" },
-                { status: 404 }
-            );
-        }
+        const { familyMember, error: familyError } = await getFamilyMemberWithPatient(session.user.id);
+        if (familyError) return familyError;
 
         // Get the linked pregnant woman's details
-        const patient = await User.findById(familyMember.familyOf)
-            .select('-password') // Exclude password
-            .lean();
+        const { patient, error: patientError } = await getLinkedPatient(familyMember.familyOf);
+        if (patientError) return patientError;
 
-
-
-        if (!patient) {
-            return NextResponse.json(
-                { error: "Linked patient not found" },
-                { status: 404 }
-            );
-        }
         console.log(patient);
         
         // Get recent symptom logs for this patient
@@ -75,16 +52,13 @@ export async function GET() {
             uniqueCode: patient.uniqueCode
         };
 
-        return NextResponse.json({
+        return successResponse({
             success: true,
             patient: patientInfo
         });
 
     } catch (error) {
         console.error("Error fetching patient details:", error);
-        return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500 }
-        );
+        return errorResponse("Internal server error", 500);
     }
 }

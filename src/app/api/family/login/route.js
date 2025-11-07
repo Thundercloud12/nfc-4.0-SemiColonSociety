@@ -2,16 +2,14 @@ import { NextResponse } from "next/server";
 import { connectDb } from "@/lib/dbConnect";
 import { User } from "@/models/User";
 import bcrypt from "bcryptjs";
+import { errorResponse, successResponse } from "@/lib/apiUtils";
 
 export async function POST(request) {
     try {
         const { uniqueCode, password } = await request.json();
 
         if (!uniqueCode || !password) {
-            return NextResponse.json(
-                { error: "Unique code and password are required" },
-                { status: 400 }
-            );
+            return errorResponse("Unique code and password are required", 400);
         }
 
         await connectDb();
@@ -23,10 +21,7 @@ export async function POST(request) {
         });
 
         if (!pregnantWoman) {
-            return NextResponse.json(
-                { error: "Invalid unique code. No pregnant woman found with this code." },
-                { status: 404 }
-            );
+            return errorResponse("Invalid unique code. No pregnant woman found with this code.", 404);
         }
 
         // Check if family member already exists for this pregnant woman
@@ -53,14 +48,11 @@ export async function POST(request) {
             // Verify password for existing family member
             const isPasswordValid = await bcrypt.compare(password, familyMember.password);
             if (!isPasswordValid) {
-                return NextResponse.json(
-                    { error: "Invalid password" },
-                    { status: 401 }
-                );
+                return errorResponse("Invalid password", 401);
             }
         }
 
-        return NextResponse.json({
+        return successResponse({
             success: true,
             message: "Family member authenticated successfully",
             familyMember: {
@@ -73,9 +65,6 @@ export async function POST(request) {
 
     } catch (error) {
         console.error("Family login error:", error);
-        return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500 }
-        );
+        return errorResponse("Internal server error", 500);
     }
 }

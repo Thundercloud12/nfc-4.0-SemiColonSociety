@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { connectDb } from "@/lib/dbConnect";
 import User from "@/models/User";
 import Emergency from "@/models/Emergency"; 
+import { formatPhoneNumber, errorResponse, successResponse } from "@/lib/apiUtils"; 
 
 
 const accountSid = process.env.TWILIO_ACC_SID;
@@ -15,10 +16,7 @@ export async function POST(req) {
     const { userId, userLocation } = await req.json();
 
     if (!userId || !userLocation) {
-      return new Response(
-        JSON.stringify({ error: "Missing required fields" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+      return errorResponse("Missing required fields", 400);
     }
 
     await connectDb();
@@ -27,10 +25,7 @@ export async function POST(req) {
     const user = await User.findById(userId).lean();
 
     if (!user) {
-      return new Response(
-        JSON.stringify({ error: "User not found" }),
-        { status: 404, headers: { "Content-Type": "application/json" } }
-      );
+      return errorResponse("User not found", 404);
     }
 
     // Find ASHA worker by reverse lookup
@@ -40,10 +35,7 @@ export async function POST(req) {
     }).lean();
 
     if (!ashaWorker || !ashaWorker.phone) {
-      return new Response(
-        JSON.stringify({ error: "ASHA worker not found or missing phone number" }),
-        { status: 404, headers: { "Content-Type": "application/json" } }
-      );
+      return errorResponse("ASHA worker not found or missing phone number", 404);
     }
 
 
@@ -59,12 +51,10 @@ export async function POST(req) {
     const mapsLink = `https://maps.google.com/?q=${lat},${lng}`;
 
     const messageBody = `EMERGENCY ALERT!\nHelp needed at:\n${fullAddress}\nLocation: ${mapsLink}`;
-      let toPhoneNumber = ashaWorker.phone;
-
-      // Ensure it starts with "+91" if it's a 10-digit Indian number
-      if (/^\d{10}$/.test(toPhoneNumber)) {
-        toPhoneNumber = `+91${toPhoneNumber}`;
-      }
+    
+    // Format phone number for Twilio
+    const toPhoneNumber = formatPhoneNumber(ashaWorker.phone);
+    
     await client.messages.create({
       body: messageBody,
       from: twilioPhoneNumber,
@@ -88,16 +78,10 @@ export async function POST(req) {
 
     await emergencyRecord.save();
 
-    return new Response(
-      JSON.stringify({ success: true }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return successResponse({ success: true });
   } catch (error) {
     console.error("Error in emergency API:", error);
-    return new Response(
-      JSON.stringify({ error: "Failed to send emergency alert" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return errorResponse("Failed to send emergency alert", 500);
   }
 
 }

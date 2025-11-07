@@ -1,23 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { connectDb } from "@/lib/dbConnect";
 import User from "@/models/User";
+import { initApiRoute, errorResponse, successResponse } from "@/lib/apiUtils";
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Check if user is ASHA worker
-    if (session.user.role !== "asha") {
-      return NextResponse.json({ error: "Access denied" }, { status: 403 });
-    }
-
-    await connectDb();
+    const { session, error } = await initApiRoute(['asha']);
+    if (error) return error;
 
     // Find the ASHA worker and populate their assigned patients
     const ashaWorker = await User.findById(session.user.id)
@@ -25,18 +14,15 @@ export async function GET() {
       .select('assignedPatients');
 
     if (!ashaWorker) {
-      return NextResponse.json({ error: "ASHA worker not found" }, { status: 404 });
+      return errorResponse("ASHA worker not found", 404);
     }
 
-    return NextResponse.json({ 
+    return successResponse({ 
       patients: ashaWorker.assignedPatients || [] 
     });
 
   } catch (error) {
     console.error("Error fetching patients:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return errorResponse("Internal server error", 500);
   }
 }

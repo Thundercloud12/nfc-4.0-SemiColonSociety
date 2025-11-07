@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDb } from "@/lib/dbConnect";
 import { User } from "@/models/User";
-import crypto from "crypto";
+import { ensureUniqueCode, errorResponse, successResponse } from "@/lib/apiUtils";
 
-// Function to generate unique code
-function generateUniqueCode() {
-    return crypto.randomBytes(4).toString('hex').toUpperCase(); // 8-character code
-}
 
 export async function POST(request) {
     console.log("[Register API] POST request received");
@@ -55,9 +51,7 @@ export async function POST(request) {
                 hasRole: !!role
             });
             console.log("[Register API] Original request body for debugging:", requestBody);
-            return NextResponse.json({
-                error: "Name, phone, password and role are required"
-            }, { status: 400 });
+            return errorResponse("Name, phone, password and role are required", 400);
         }
         console.log("[Register API] Basic validation passed");
 
@@ -65,9 +59,7 @@ export async function POST(request) {
         console.log("[Register API] Validating role:", role);
         if (!['pregnant', 'family', 'asha'].includes(role)) {
             console.error("[Register API] Invalid role provided:", role);
-            return NextResponse.json({
-                error: "Role must be pregnant, family, or asha"
-            }, { status: 400 });
+            return errorResponse("Role must be pregnant, family, or asha", 400);
         }
         console.log("[Register API] Role validation passed");
 
@@ -78,16 +70,12 @@ export async function POST(request) {
                 hasPregnancyInfo: !!pregnancyInfo,
                 pregnancyInfoMonth: pregnancyInfo?.month
             });
-            return NextResponse.json({
-                error: "Pregnancy information is required for pregnant users"
-            }, { status: 400 });
+            return errorResponse("Pregnancy information is required for pregnant users", 400);
         }
 
         if (role === 'family' && !uniqueCode) {
             console.error("[Register API] Family member missing unique code");
-            return NextResponse.json({
-                error: "Unique code is required for family members to link with pregnant woman"
-            }, { status: 400 });
+            return errorResponse("Unique code is required for family members to link with pregnant woman", 400);
         }
         console.log("[Register API] Role-specific validation passed");
 
@@ -99,9 +87,7 @@ export async function POST(request) {
         const existingUser = await User.findOne({ phone });
         if (existingUser) {
             console.warn("[Register API] User already exists with phone:", phone, "UserID:", existingUser._id);
-            return NextResponse.json({
-                message: "User already registered with this phone number"
-            }, { status: 400 });
+            return errorResponse("User already registered with this phone number", 400);
         }
         console.log("[Register API] No existing user found, proceeding with registration");
 
@@ -157,22 +143,12 @@ export async function POST(request) {
         if (role === 'pregnant') {
             console.log("[Register API] Processing pregnant user registration...");
             // Generate unique code for pregnant woman
-            let generatedCode;
-            let codeExists = true;
-            
             console.log("[Register API] Generating unique code for pregnant woman...");
-            // Ensure unique code is truly unique
-            while (codeExists) {
-                generatedCode = generateUniqueCode();
-                console.log("[Register API] Checking if code exists:", generatedCode);
-                const existingCode = await User.findOne({ uniqueCode: generatedCode });
-                if (!existingCode) {
-                    codeExists = false;
-                    console.log("[Register API] Unique code generated successfully:", generatedCode);
-                } else {
-                    console.log("[Register API] Code already exists, generating new one...");
-                }
-            }
+            const generatedCode = await ensureUniqueCode(async (code) => {
+                console.log("[Register API] Checking if code exists:", code);
+                return await User.findOne({ uniqueCode: code });
+            });
+            console.log("[Register API] Unique code generated successfully:", generatedCode);
             
             userData.uniqueCode = generatedCode;
             userData.pregnancyInfo = pregnancyInfo;
@@ -195,9 +171,7 @@ export async function POST(request) {
             
             if (!pregnantWoman) {
                 console.error("[Register API] No pregnant woman found with unique code:", uniqueCode);
-                return NextResponse.json({
-                    error: "Invalid unique code. Please check the code provided by the pregnant woman."
-                }, { status: 400 });
+                return errorResponse("Invalid unique code. Please check the code provided by the pregnant woman.", 400);
             }
             
             console.log("[Register API] Found pregnant woman:", {
@@ -213,21 +187,12 @@ export async function POST(request) {
         } else if (role === 'asha') {
             console.log("[Register API] Processing ASHA worker registration...");
             // ASHA workers get their own unique code for identification
-            let generatedCode;
-            let codeExists = true;
-            
             console.log("[Register API] Generating unique code for ASHA worker...");
-            while (codeExists) {
-                generatedCode = generateUniqueCode();
-                console.log("[Register API] Checking if ASHA code exists:", generatedCode);
-                const existingCode = await User.findOne({ uniqueCode: generatedCode });
-                if (!existingCode) {
-                    codeExists = false;
-                    console.log("[Register API] ASHA unique code generated successfully:", generatedCode);
-                } else {
-                    console.log("[Register API] ASHA code already exists, generating new one...");
-                }
-            }
+            const generatedCode = await ensureUniqueCode(async (code) => {
+                console.log("[Register API] Checking if ASHA code exists:", code);
+                return await User.findOne({ uniqueCode: code });
+            });
+            console.log("[Register API] ASHA unique code generated successfully:", generatedCode);
             
             userData.uniqueCode = generatedCode;
             console.log("[Register API] ASHA worker assigned unique code:", generatedCode);
@@ -272,7 +237,7 @@ export async function POST(request) {
         }
 
         console.log("[Register API] Registration completed successfully for user:", newUser._id);
-        return NextResponse.json(response, { status: 201 });
+        return successResponse(response, 201);
 
     } catch (error) {
         console.error("[Register API] Error occurred during registration:");
@@ -288,8 +253,6 @@ export async function POST(request) {
             console.error("[Register API] Duplicate key error:", error.keyPattern);
         }
         
-        return NextResponse.json({
-            error: "Error occurred at register handler"
-        }, { status: 500 });
+        return errorResponse("Error occurred at register handler", 500);
     }
 }
