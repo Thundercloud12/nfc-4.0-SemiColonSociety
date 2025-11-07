@@ -1,32 +1,18 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { connectDb } from "@/lib/dbConnect";
 import { User } from "@/models/User";
 import Appointment from "@/models/Appointment";
+import { initApiRoute, errorResponse, successResponse } from "@/lib/apiUtils";
+import { getFamilyMemberWithPatient } from "@/lib/familyUtils";
 
 export async function GET() {
     try {
-        const session = await getServerSession(authOptions);
-        
-        if (!session || session.user.role !== "family") {
-            return NextResponse.json(
-                { error: "Unauthorized - Family access required" },
-                { status: 401 }
-            );
-        }
-
-        await connectDb();
+        const { session, error } = await initApiRoute(['family']);
+        if (error) return error;
 
         // Get the family member's details
-        const familyMember = await User.findById(session.user.id);
-        
-        if (!familyMember || !familyMember.familyOf) {
-            return NextResponse.json(
-                { error: "No linked patient found for this family member" },
-                { status: 404 }
-            );
-        }
+        const { familyMember, error: familyError } = await getFamilyMemberWithPatient(session.user.id);
+        if (familyError) return familyError;
 
         // Get appointments for the linked patient
         const appointments = await Appointment.find({ 
@@ -37,16 +23,13 @@ export async function GET() {
         .populate('ashaId', 'name phone')
         .lean();
 
-        return NextResponse.json({
+        return successResponse({
             success: true,
             appointments: appointments
         });
 
     } catch (error) {
         console.error("Error fetching appointments:", error);
-        return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500 }
-        );
+        return errorResponse("Internal server error", 500);
     }
 }

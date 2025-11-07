@@ -1,25 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { connectDb } from "@/lib/dbConnect";
 import SymptomLog from "@/models/SymptomLog";
 import User from "@/models/User";
+import { initApiRoute, errorResponse, successResponse } from "@/lib/apiUtils";
 
 export async function POST(request) {
   console.log("[Symptom Log API] POST request received");
   
   try {
     console.log("[Symptom Log API] Getting session...");
-    const session = await getServerSession(authOptions);
-    
-    if (!session) {
-      console.error("[Symptom Log API] No session found");
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (session.user.role !== "pregnant") {
-      console.error("[Symptom Log API] User is not pregnant, role:", session.user.role);
-      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    const { session, error } = await initApiRoute(['pregnant']);
+    if (error) {
+      console.error("[Symptom Log API] Session validation failed");
+      return error;
     }
 
     console.log("[Symptom Log API] Parsing symptom data...");
@@ -34,10 +27,7 @@ export async function POST(request) {
 
     if (!symptomData || !symptomData.symptoms) {
       console.error("[Symptom Log API] No symptom data provided");
-      return NextResponse.json(
-        { error: "Symptom data is required" },
-        { status: 400 }
-      );
+      return errorResponse("Symptom data is required", 400);
     }
 
     console.log("[Symptom Log API] Connecting to database...");
@@ -93,7 +83,7 @@ export async function POST(request) {
     console.log("[Symptom Log API] User updated with symptom log reference");
 
     console.log("[Symptom Log API] Symptom log creation completed successfully");
-    return NextResponse.json({
+    return successResponse({
       message: "Symptom log saved successfully",
       symptomLogId: symptomLog._id,
       priority: priority,
@@ -108,9 +98,6 @@ export async function POST(request) {
     console.error("[Symptom Log API] Error saving symptom log:");
     console.error("[Symptom Log API] Error message:", error.message);
     console.error("[Symptom Log API] Error stack:", error.stack);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return errorResponse("Internal server error", 500);
   }
 }

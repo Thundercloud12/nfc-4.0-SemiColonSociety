@@ -4,16 +4,14 @@ import { connectDb } from "@/lib/dbConnect";
 import User from "@/models/User";
 import OTP from "@/models/Otp";
 import { sendOTPEmail } from "@/lib/nodemailer";
-import crypto from "crypto";
+import { generateOTP, errorResponse, successResponse } from "@/lib/apiUtils";
 
 export async function POST(request) {
     try {
         const { identifier } = await request.json(); // email or phone
 
         if (!identifier) {
-            return NextResponse.json({
-                error: "Email or phone is required"
-            }, { status: 400 });
+            return errorResponse("Email or phone is required", 400);
         }
 
         await connectDb()
@@ -27,13 +25,11 @@ export async function POST(request) {
         });
 
         if (!user) {
-            return NextResponse.json({
-                error: "No user found with this email/phone"
-            }, { status: 404 });
+            return errorResponse("No user found with this email/phone", 404);
         }
 
         // Generate 6-digit OTP
-        const otp = crypto.randomInt(100000, 999999).toString();
+        const otp = generateOTP();
 
         // Delete any existing OTPs for this identifier
         await OTP.deleteMany({ identifier });
@@ -49,19 +45,13 @@ export async function POST(request) {
         const emailResult = await sendOTPEmail(identifier, otp);
 
         if (!emailResult.success) {
-            return NextResponse.json({
-                error: "Failed to send OTP"
-            }, { status: 500 });
+            return errorResponse("Failed to send OTP", 500);
         }
 
-        return NextResponse.json({
-            message: "OTP sent successfully"
-        }, { status: 200 });
+        return successResponse({ message: "OTP sent successfully" });
 
     } catch (error) {
         console.error('Send OTP error:', error);
-        return NextResponse.json({
-            error: "Error occurred while sending OTP"
-        }, { status: 500 });
+        return errorResponse("Error occurred while sending OTP", 500);
     }
 }

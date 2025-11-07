@@ -3,12 +3,14 @@ import { NextResponse } from "next/server";
 import { connectDb } from "@/lib/dbConnect";
 import OTP from "@/models/Otp";
 import User from "@/models/User";
+import { errorResponse, successResponse } from "@/lib/apiUtils";
+
 export async function POST(request) {
     try {
         const { identifier, otp } = await request.json();
 
         if (!identifier || !otp) {
-            return NextResponse.json({ error: "Identifier and OTP required" }, { status: 400 });
+            return errorResponse("Identifier and OTP required", 400);
         }
 
         await connectDb();
@@ -20,7 +22,7 @@ export async function POST(request) {
             !record ||
             new Date(record.expiresAt) < new Date()
         ) {
-            return NextResponse.json({ error: "Invalid or expired OTP" }, { status: 401 });
+            return errorResponse("Invalid or expired OTP", 401);
         }
 
         // Mark OTP as used
@@ -33,11 +35,11 @@ export async function POST(request) {
         });
 
         if (!user) {
-            return NextResponse.json({ error: "User not found" }, { status: 404 });
+            return errorResponse("User not found", 404);
         }
 
         // Success: return user data to frontend for NextAuth callback
-        return NextResponse.json({
+        return successResponse({
             message: "OTP valid",
             user: {
                 id: user._id,
@@ -48,6 +50,6 @@ export async function POST(request) {
         });
     } catch (error) {
         console.error(error);
-        return NextResponse.json({ error: "Error verifying OTP" }, { status: 500 });
+        return errorResponse("Error verifying OTP", 500);
     }
 }
