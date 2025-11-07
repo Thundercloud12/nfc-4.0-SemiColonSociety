@@ -90,19 +90,22 @@ export function formatPhoneNumber(phone) {
 /**
  * Ensures a unique code doesn't already exist in the database
  * @param {Function} findFn - Async function to check if code exists
+ * @param {number} maxAttempts - Maximum number of attempts (default: 10)
  * @returns {Promise<string>} Unique code
+ * @throws {Error} If unable to generate unique code within maxAttempts
  */
-export async function ensureUniqueCode(findFn) {
+export async function ensureUniqueCode(findFn, maxAttempts = 10) {
   let code;
-  let exists = true;
+  let attempts = 0;
   
-  while (exists) {
+  while (attempts < maxAttempts) {
     code = generateUniqueCode();
     const result = await findFn(code);
     if (!result) {
-      exists = false;
+      return code;
     }
+    attempts++;
   }
   
-  return code;
+  throw new Error('Unable to generate unique code after maximum attempts');
 }

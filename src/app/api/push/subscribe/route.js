@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { connectDb } from "@/lib/dbConnect";
 import User from "@/models/User";
-import { validateSession, errorResponse, successResponse } from "@/lib/apiUtils";
+import { initApiRoute, errorResponse, successResponse } from "@/lib/apiUtils";
 
 export async function POST(request) {
   try {
-    const { session, error } = await validateSession();
+    const { session, error } = await initApiRoute();
     if (error) return error;
 
     const { subscription, deviceInfo } = await request.json();
@@ -13,8 +13,6 @@ export async function POST(request) {
     if (!subscription || !subscription.endpoint) {
       return errorResponse("Invalid subscription data", 400);
     }
-
-    await connectDb();
     
     // Add subscription to user (avoid duplicates)
     await User.findByIdAndUpdate(session.user.id, {
@@ -40,12 +38,10 @@ export async function POST(request) {
 
 export async function DELETE(request) {
   try {
-    const { session, error } = await validateSession();
+    const { session, error } = await initApiRoute();
     if (error) return error;
 
     const { endpoint } = await request.json();
-    
-    await connectDb();
     
     // Remove subscription from user
     await User.findByIdAndUpdate(session.user.id, {

@@ -97,9 +97,5 @@ function runTests() {
 }
 
 // Export for potential use in other test files
-export { testGenerateUniqueCode, testGenerateOTP, testFormatPhoneNumber };
+export { testGenerateUniqueCode, testGenerateOTP, testFormatPhoneNumber, runTests };
 
-// Only run if this file is executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-  runTests();
-}
